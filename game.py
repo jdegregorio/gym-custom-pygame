@@ -16,6 +16,7 @@ Actions:
 
 
 # Import the pygame module
+import sys
 import pygame
 import random
 import math
@@ -154,6 +155,10 @@ pygame.init()
 # Setup the clock for a decent framerate
 clock = pygame.time.Clock()
 
+# Initialize scoreboard
+score = 0
+font = pygame.font.SysFont("monospace", 16)
+
 # Create the screen object
 # The size is determined by the constant SCREEN_WIDTH and SCREEN_HEIGHT
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -229,6 +234,10 @@ while running:
         # If so, then remove the player and stop the loop
         player.kill()
         running = False
+
+    score += 1
+    score_board = font.render("Score = " + str(score), 1, (255, 255, 255))
+    screen.blit(score_board, (5, 10))
 
     # Update the display
     pygame.display.flip()

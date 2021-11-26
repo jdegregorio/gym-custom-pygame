@@ -12,7 +12,6 @@ Objectives:
 
 
 # Import the pygame module
-import sys
 import pygame
 import random
 import math
@@ -33,6 +32,8 @@ from pygame.locals import (
 SCREEN_WIDTH = 1000
 SCREEN_HEIGHT = 800
 PLAYER_SPEED = 5
+RATE_START = 2  # Number of rocks/second generated
+RATE_INCREMENT = 50  # Add additional rock/second every N seconds
 
 # Define a player object by extending pygame.sprite.Sprite
 class Player(pygame.sprite.Sprite):
@@ -130,10 +131,6 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 framerate = 50
 
-# Create a custom event for adding a new enemy and a cloud
-ADDROCK = pygame.USEREVENT + 1
-pygame.time.set_timer(ADDROCK, 200)
-
 # Instantiate player and sprite groups
 player = Player()
 rocks = pygame.sprite.Group()
@@ -145,7 +142,7 @@ running = True
 
 # Main loop
 while running:
-    # for loop through the event queue
+    # Loop through event queue
     for event in pygame.event.get():
         # Check for KEYDOWN event
         if event.type == KEYDOWN:
@@ -156,12 +153,12 @@ while running:
         elif event.type == QUIT:
             running = False
 
-        # Add a new enemy?
-        elif event.type == ADDROCK:
-            # Create the new enemy and add it to sprite groups
-            new_rock = Rock()
-            rocks.add(new_rock)
-            all_sprites.add(new_rock)
+    # Add rocks, increase rate over time
+    thres  = (1 / framerate) * (RATE_START + score/RATE_INCREMENT)
+    if random.random() < thres:
+        new_rock = Rock()
+        rocks.add(new_rock)
+        all_sprites.add(new_rock)
 
     # Update sprite positions
     pressed_keys = pygame.key.get_pressed()

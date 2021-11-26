@@ -1,17 +1,13 @@
 """
-Overview: Simple Single Player Game
+Rocks
+
 Rules:
   - Single player
-  - Multiple lives
-  - Get more lives by collecting green space mushrooms
+  - 3 lives
+  - Move around using up/down/left/right arrows
   
 Objectives:
-  - One point for every second the player stays alive
-  - 5 points for every space coin collected
-
-Actions:
-  - Arrow Keys - Move around the field
-  - Right Shift Key - Freeze all current spacerocks
+  - Avoid rocks for as long as possible
 """
 
 
@@ -29,7 +25,6 @@ from pygame.locals import (
     K_LEFT,
     K_RIGHT,
     K_ESCAPE,
-    K_RSHIFT,
     KEYDOWN,
     QUIT,
 )
@@ -84,7 +79,6 @@ class Player(pygame.sprite.Sprite):
         self.lives -= 1
 
 
-
 # Define the enemy object by extending pygame.sprite.Sprite
 class Rock(pygame.sprite.Sprite):
     def __init__(self):
@@ -128,29 +122,6 @@ class Rock(pygame.sprite.Sprite):
         elif self.rect.bottom < -50:
             self.kill()
 
-# Define the cloud object by extending pygame.sprite.Sprite
-# Use an image for a better-looking sprite
-# class Cloud(pygame.sprite.Sprite):
-#     def __init__(self):
-#         super(Cloud, self).__init__()
-#         self.surf = pygame.image.load("static/cloud.png")
-#         self.surf = pygame.transform.scale(self.surf, (100, 100))
-#         self.surf = self.surf.convert_alpha()
-#         # The starting position is randomly generated
-#         self.rect = self.surf.get_rect(
-#             center=(
-#                 random.randint(SCREEN_WIDTH + 20, SCREEN_WIDTH + 100),
-#                 random.randint(0, SCREEN_HEIGHT),
-#             )
-#         )
-
-#     # Move the cloud based on a constant speed
-#     # Remove the cloud when it passes the left edge of the screen
-#     def update(self):
-#         self.rect.move_ip(-5, 0)
-#         if self.rect.right < 0:
-#             self.kill()
-
 
 # Initialize pygame
 pygame.init()
@@ -170,8 +141,6 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 # Create a custom event for adding a new enemy and a cloud
 ADDROCK = pygame.USEREVENT + 1
 pygame.time.set_timer(ADDROCK, 200)
-# ADDCLOUD = pygame.USEREVENT + 2
-# pygame.time.set_timer(ADDCLOUD, 1000)
 
 # Instantiate player
 player = Player()
@@ -205,14 +174,6 @@ while running:
             new_rock = Rock()
             rocks.add(new_rock)
             all_sprites.add(new_rock)
-
-        
-        # # Add a new cloud?
-        # elif event.type == ADDCLOUD:
-        #     # Create the new cloud and add it to sprite groups
-        #     new_cloud = Cloud()
-        #     clouds.add(new_cloud)
-        #     all_sprites.add(new_cloud)
 
     # Update sprite positions
     pressed_keys = pygame.key.get_pressed()

@@ -109,8 +109,7 @@ class Rock(pygame.sprite.Sprite):
         self.surf = self.surf.convert_alpha()
         self.rect = self.surf.get_rect(center=self.center)
 
-    # Move the sprite based on speed
-    # Remove the sprite when it passes the left edge of the screen
+    # Update location, kill if moved off of the screen
     def update(self):
         self.rect.move_ip(self.speed * self.dir_x, self.speed * self.dir_y)
         if self.rect.right < -50:
@@ -125,30 +124,19 @@ class Rock(pygame.sprite.Sprite):
 
 # Initialize pygame
 pygame.init()
-
-# Setup the clock for a decent framerate
+font = pygame.font.SysFont("monospace", 36)
+score = 0
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 framerate = 50
-
-# Initialize scoreboard
-score = 0
-font = pygame.font.SysFont("monospace", 36)
-
-# Create the screen object
-# The size is determined by the constant SCREEN_WIDTH and SCREEN_HEIGHT
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Create a custom event for adding a new enemy and a cloud
 ADDROCK = pygame.USEREVENT + 1
 pygame.time.set_timer(ADDROCK, 200)
 
-# Instantiate player
+# Instantiate player and sprite groups
 player = Player()
-
-# Create sprite group for rocks
 rocks = pygame.sprite.Group()
-
-# Create sprite group for all sprites (used for rendering)
 all_sprites = pygame.sprite.Group()
 all_sprites.add(player)
 

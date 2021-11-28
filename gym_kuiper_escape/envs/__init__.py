@@ -1,0 +1,3 @@
+from gym_kuiper_escape.envs.env_easy import KuiperEscapeEasy
+from gym_kuiper_escape.envs.env_medium import KuiperEscapeMedium
+from gym_kuiper_escape.envs.env_hard import KuiperEscapeHard

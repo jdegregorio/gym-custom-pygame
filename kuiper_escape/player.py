@@ -12,7 +12,7 @@ class Player(pygame.sprite.Sprite):
         self.screen_width = screen_dims[0]
         self.screen_height = screen_dims[1]
         self.lives = 3
-        self.surf = pygame.image.load("./game/static/spaceship.png")
+        self.surf = pygame.image.load("./kuiper_escape/static/spaceship.png")
         aspect_ratio = self.surf.get_height() / self.surf.get_width()
         scaled_height = self.screen_height * 0.05
         scaled_width = scaled_height * aspect_ratio

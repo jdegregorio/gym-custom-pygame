@@ -29,7 +29,7 @@ class Rock(pygame.sprite.Sprite):
             self.center = (random.randint(0, self.screen_width - self.size), -self.size)
         elif self.face == 'bottom':
             self.center = (random.randint(0, self.screen_width - self.size), self.screen_height)
-        self.surf = pygame.image.load("./game/static/asteroid.png")
+        self.surf = pygame.image.load("./kuiper_escape/static/asteroid.png")
         self.surf = pygame.transform.scale(self.surf, (self.size, self.size))
         self.surf = self.surf.convert_alpha()
         self.rect = self.surf.get_rect(center=self.center)

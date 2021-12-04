@@ -9,8 +9,6 @@ steadily over time.
 import pygame
 import random
 import math
-
-from pygame.constants import K_DOWN, K_LEFT, K_RIGHT, K_UP
 from player import Player
 from rock import Rock
 
@@ -29,6 +27,7 @@ class Game:
     def __init__(
         self, 
         mode='manual',
+        lives=3,
         rate_start=2,  # Number of rocks/second generated
         rate_increment=50  # Add additional rock/second every N seconds
     ):
@@ -37,22 +36,31 @@ class Game:
         self.mode = mode
         self.font = pygame.font.SysFont("monospace", 36)
         self.score = 0
+        self.lives = lives
         self.rate_start = rate_start
         self.rate_increment = rate_increment
         self.clock = pygame.time.Clock()
 
         # Define constants for the screen width and height
-        self.screen_width = 1000
+        if self.mode == 'manual':
+            self.screen_mode = pygame.SHOWN
+        else:
+            self.screen_mode = pygame.HIDDEN
+        self.screen_width = 800
         self.screen_height = 800
         self.screen_dims = (self.screen_width, self.screen_height)
         self.framerate = 50
-        self.screen = pygame.display.set_mode(self.screen_dims)
+        self.screen = pygame.display.set_mode(
+            self.screen_dims, 
+            flags=self.screen_mode
+        )
 
         # Instantiate player and sprite groups
-        self.player = Player(screen_dims=self.screen_dims)
+        self.player = Player(screen_dims=self.screen_dims, lives=self.lives)
         self.rocks = pygame.sprite.Group()
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.player)
+
 
     def step_frame(self, action):
 
@@ -80,7 +88,7 @@ class Game:
         # Update score
         self.score += 1 / self.framerate
 
-    
+
     def get_action(self, pressed_keys):
         up = pressed_keys[K_UP]
         right = pressed_keys[K_RIGHT]
@@ -109,6 +117,27 @@ class Game:
             action = 0
         return action
 
+    
+    def turn_on_screen(self):
+        self.screen = pygame.display.set_mode(
+            self.screen_dims, 
+            flags=pygame.SHOWN
+        )
+
+
+    def render_screen(self):
+        self.screen.fill((0, 0, 0))
+        info_score = self.font.render("Score = " + str(math.floor(self.score)), 1, (255, 255, 255))
+        info_lives = self.font.render("Lives =  " + str(self.player.lives), 1, (255, 255, 255))
+        self.screen.blit(info_score, (5, 10))
+        self.screen.blit(info_lives, (self.screen_width - 200, 10))
+        for entity in self.all_sprites:
+            self.screen.blit(entity.surf, entity.rect)
+
+        # Update the display
+        pygame.display.flip()
+
+
     def play(self):
 
         # Variable to keep the main loop running
@@ -131,22 +160,12 @@ class Game:
             pressed_keys = pygame.key.get_pressed()
             action = self.get_action(pressed_keys)
             self.step_frame(action)
-            self.screen.fill((0, 0, 0))
-
-            # Render screen
-            info_score = self.font.render("Score = " + str(math.floor(self.score)), 1, (255, 255, 255))
-            info_lives = self.font.render("Lives =  " + str(self.player.lives), 1, (255, 255, 255))
-            self.screen.blit(info_score, (5, 10))
-            self.screen.blit(info_lives, (self.screen_width - 200, 10))
-            for entity in self.all_sprites:
-                self.screen.blit(entity.surf, entity.rect)
-
-            # Update the display
-            pygame.display.flip()
+            self.render_screen()
 
             # Set framerate
             self.clock.tick(self.framerate)
 
+
 if __name__ == '__main__':
-    game = Game()
+    game = Game(lives=10)
     game.play()

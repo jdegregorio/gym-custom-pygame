@@ -7,11 +7,11 @@ from pygame.locals import (
 )
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, screen_dims):
+    def __init__(self, screen_dims, lives=3):
         super(Player, self).__init__()
         self.screen_width = screen_dims[0]
         self.screen_height = screen_dims[1]
-        self.lives = 3
+        self.lives = lives
         self.surf = pygame.image.load("./kuiper_escape/static/spaceship.png")
         aspect_ratio = self.surf.get_height() / self.surf.get_width()
         scaled_height = self.screen_height * 0.05
@@ -22,8 +22,8 @@ class Player(pygame.sprite.Sprite):
         self.surf = self.surf.convert_alpha()
         self.rect = self.surf.get_rect(
             center = (
-                (self.screen_width + scaled_width) / 2, 
-                (self.screen_height + scaled_height) / 2
+                self.screen_width  / 2, 
+                self.screen_height / 2
             )
         )
 

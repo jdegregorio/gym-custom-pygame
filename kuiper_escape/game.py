@@ -26,7 +26,7 @@ from pygame.locals import (
 class Game:
     def __init__(
         self, 
-        mode='manual',
+        mode='human',
         lives=3,
         rate_start=2,  # Number of rocks/second generated
         rate_increment=50  # Add additional rock/second every N seconds
@@ -42,7 +42,7 @@ class Game:
         self.clock = pygame.time.Clock()
 
         # Define constants for the screen width and height
-        if self.mode == 'manual':
+        if self.mode == 'human':
             self.screen_mode = pygame.SHOWN
         else:
             self.screen_mode = pygame.HIDDEN

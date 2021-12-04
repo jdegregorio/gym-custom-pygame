@@ -4,18 +4,20 @@ import gym
 from gym import error, spaces, utils
 from gym.utils import seeding
 import math
+import pygame
 
 sys.path.append('./kuiper_escape')
 from game import Game
 
 class KuiperEscapeEasy(gym.Env):
-    metadata = {'render.modes': ['pygame', 'none']}
+    metadata = {'render.modes': ['human', 'rgb_array']}
 
-    def __init__(self, lives):
+    def __init__(self, mode='agent', lives=10):
+        self.mode = mode
+        self.game = Game(mode=mode, lives=lives)
         self.iteration = 0
         self.iteration_max = 15 * 60 * self.game.framerate  # 15 minutes
         self.n_rock_state_obs = 10
-        self.game = Game(mode='agent', lives=lives)
 
     def step(self, action):
         """Run one timestep of the environment's dynamics. When end of
@@ -62,8 +64,6 @@ class KuiperEscapeEasy(gym.Env):
         }
 
         return observation, reward, done, info
-
-
 
     def reset(self):
         """Resets the environment to an initial state and returns an initial
@@ -204,3 +204,7 @@ class KuiperEscapeEasy(gym.Env):
             angle_rel = angle_rel % 180
         return int(angle_rel)
 
+
+if __name__ == "__main__":
+    env = KuiperEscapeEasy(mode='human')
+    env.game.play()

@@ -10,7 +10,7 @@ import pygame
 sys.path.append('./kuiper_escape')
 from game import Game
 
-class KuiperEscapeEasy(gym.Env):
+class KuiperEscape(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array']}
 
     def __init__(self, mode='agent', lives=10):

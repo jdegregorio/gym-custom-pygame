@@ -9,7 +9,7 @@ This package unites the **PyGame Framework** with the **Open AI Gym Framework** 
 
 The objective of the game is to live as long as you can, while avoiding the asteroids in the Kuiper Belt. The player starts centered in the screen, an can move in any direction using the keyboard arrows.  Asteroids are generated with random sizes, speeds, and starting locations. The game ends once all player lives have expired.
 
-`TODO: Insert image of game`
+<img width="405" alt="image" src="https://user-images.githubusercontent.com/20359930/144731391-99aa8834-6744-48e8-8a18-8ea3e0c8d2af.png">
 
 ### Actions 
 

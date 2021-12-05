@@ -41,7 +41,7 @@ class Game:
         # Initialize pygame
         pygame.init()
         self.mode = mode
-        self.font = pygame.font.SysFont("monospace", 36)
+        self.font = pygame.font.SysFont("monospace", 24)
         self.score = 0
         self.lives = lives
         self.rate_start = rate_start

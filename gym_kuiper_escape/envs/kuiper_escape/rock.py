@@ -1,7 +1,14 @@
-import pygame
-import random
+# Standard imports
+import os
 import math
+import random
 
+# 3rd party imports
+import pygame
+
+# Construct path to assets
+path_base = os.path.dirname(os.path.realpath(__file__))
+path_asset = os.path.join(path_base, 'assets/asteroid.png')
 
 class Rock(pygame.sprite.Sprite):
     def __init__(self, screen_dims):
@@ -34,7 +41,7 @@ class Rock(pygame.sprite.Sprite):
             self.center = (random.randint(0, self.screen_width), -self.size / 2)
         elif self.face == 'bottom':
             self.center = (random.randint(0, self.screen_width), self.screen_height + (self.size / 2))
-        self.surf = pygame.image.load("./kuiper_escape/static/asteroid.png")
+        self.surf = pygame.image.load(path_asset)
         self.surf = pygame.transform.scale(self.surf, (self.size, self.size))
         self.surf = self.surf.convert_alpha()
         self.rect = self.surf.get_rect(center=self.center)

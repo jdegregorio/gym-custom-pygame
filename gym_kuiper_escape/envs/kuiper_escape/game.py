@@ -6,13 +6,14 @@ asteroids/rocks for as long as possible while the rate of rocks increases
 steadily over time.
 
 """
-import pygame
+# Standard imports
+import sys
+import os
 import random
 import math
-from player import Player
-from rock import Rock
 
-# Import pygame.locals
+# 3rd party imports
+import pygame
 from pygame.locals import (
     K_ESCAPE,
     KEYDOWN,
@@ -22,6 +23,12 @@ from pygame.locals import (
     K_LEFT,
     K_RIGHT
 )
+
+# Local imports
+path_components = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, path_components)
+from player import Player
+from rock import Rock
 
 class Game:
     def __init__(
@@ -164,8 +171,3 @@ class Game:
 
             # Set framerate
             self.clock.tick(self.framerate)
-
-
-if __name__ == '__main__':
-    game = Game(lives=10)
-    game.play()

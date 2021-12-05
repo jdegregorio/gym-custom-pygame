@@ -1,14 +1,18 @@
-
+# Standard imports
 import sys
+import os
+import math
+
+# 3rd party imports
 import numpy as np
 import gym
-from gym import error, spaces, utils
-from gym.utils import seeding
-import math
 import pygame
 
-sys.path.append('./kuiper_escape')
+# Local imports
+path_game = os.path.dirname(os.path.realpath(__file__)) + '/kuiper_escape'
+sys.path.insert(0, path_game)
 from game import Game
+
 
 class KuiperEscape(gym.Env):
     metadata = {'render.modes': ['human', 'rgb_array']}
@@ -207,5 +211,5 @@ class KuiperEscape(gym.Env):
 
 
 if __name__ == "__main__":
-    env = KuiperEscapeEasy(mode='human')
+    env = KuiperEscape(mode='human')
     env.game.play()

@@ -1,3 +1,7 @@
+# Standard imports
+import os
+
+# 3rd party imports
 import pygame
 from pygame.locals import (
     K_UP,
@@ -6,13 +10,17 @@ from pygame.locals import (
     K_RIGHT
 )
 
+# Construct path to assets
+path_base = os.path.dirname(os.path.realpath(__file__))
+path_asset = os.path.join(path_base, 'assets/spaceship.png')
+
 class Player(pygame.sprite.Sprite):
     def __init__(self, screen_dims, lives=3):
         super(Player, self).__init__()
         self.screen_width = screen_dims[0]
         self.screen_height = screen_dims[1]
         self.lives = lives
-        self.surf = pygame.image.load("./kuiper_escape/static/spaceship.png")
+        self.surf = pygame.image.load(path_asset)
         aspect_ratio = self.surf.get_height() / self.surf.get_width()
         scaled_height = self.screen_height * 0.05
         scaled_width = scaled_height * aspect_ratio

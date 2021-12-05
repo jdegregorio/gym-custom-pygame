@@ -55,14 +55,16 @@ class KuiperEscape(gym.Env):
 
     metadata = {'render.modes': ['human', 'rgb_array']}
 
-    def __init__(self, mode='agent', lives=10):
+    def __init__(self, mode='agent', lives_start=10):
         self.mode = mode
-        self.game = Game(mode=mode, lives=lives)
+        self.lives_start = lives_start
+        self.game = Game(mode=mode, lives=self.lives_start)
         self.iteration = 0
         self.iteration_max = 15 * 60 * self.game.framerate  # 15 minutes
         self.n_rock_state_obs = 10
+        self.init_obs = self.get_state()
         self.action_space = Discrete(9)
-        self.observation_space = Box(low=0, high=1, shape=(1, (self.n_rock_state_obs + 2)), dtype=np.float16)
+        self.observation_space = Box(low=0, high=1, shape=(len(self.init_obs), 1), dtype=np.float16)
         self.reward_range = (-5 * self.game.framerate, 1)
 
     def step(self, action):
@@ -122,7 +124,7 @@ class KuiperEscape(gym.Env):
         Returns:
             observation (object): the initial observation.
         """
-        self.game = Game(mode='agent')
+        self.game = Game(mode='agent', lives=self.lives_start)
         self.iteration = 0
         observation = self.get_state()
         return observation

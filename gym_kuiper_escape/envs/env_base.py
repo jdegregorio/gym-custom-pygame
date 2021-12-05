@@ -64,7 +64,7 @@ class KuiperEscape(gym.Env):
         self.n_rock_state_obs = 10
         self.init_obs = self.get_state()
         self.action_space = Discrete(9)
-        self.observation_space = Box(low=0, high=1, shape=(len(self.init_obs), 1), dtype=np.float16)
+        self.observation_space = Box(low=0, high=1, shape=self.init_obs.shape, dtype=np.float16)
         self.reward_range = (-5 * self.game.framerate, 1)
 
     def step(self, action):
@@ -202,6 +202,7 @@ class KuiperEscape(gym.Env):
         state_rocks = state_rocks.flatten()
         state = np.concatenate([state_player, state_rocks])
         state = state.astype(np.float16)
+        state = state.reshape((1, len(state)))
         return state
 
     def get_player_state(self):

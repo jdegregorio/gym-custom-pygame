@@ -1,0 +1,5 @@
+cloudpickle==2.0.0
+gym==0.21.0
+numpy==1.21.4
+pkg_resources==0.0.0
+pygame==2.1.0

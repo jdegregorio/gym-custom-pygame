@@ -6,6 +6,8 @@ import math
 # 3rd party imports
 import numpy as np
 import gym
+from gym.utils import seeding
+from gym.spaces import Discrete, Box
 import pygame
 
 # Local imports
@@ -15,6 +17,42 @@ from game import Game
 
 
 class KuiperEscape(gym.Env):
+    """ Custom PyGame OpenAI Gym Environment - Kuiper Escape
+
+    The objective of the game is to live as long as you can, while avoiding the
+    asteroids in the Kuiper Belt.  Asteroids are generated with random sizes,
+    speeds, and starting locations. The environment will exit once the max-time
+    is elapsed, or once all player lives have expired.
+
+    The user has the following discrete actions:
+     - 0: Don't move
+     - 1: Up
+     - 2: Up/Right Diagnal
+     - 3: Right
+     - 4: Right/Down Diagnal
+     - 5: Down
+     - 6: Down/Left Diagnal
+     - 7: Left
+     - 8: Left/Up Diagnal
+
+    The state/observation consists of the following variables:
+     - Player Location: x, y
+     - For N-nearest Asteroids:
+        - Absolute position (x, y)
+        - Straight line distance from player
+        - Angle from player to asteroid
+        - Size
+        - Speed
+        - Heading (i.e. is it headed at or away from player)
+
+    Note: All state observations are normalized between 0 and 1
+
+    The environment will provide the following rewards:
+     - Reward of 1 for each step without losing life
+     - Penalty (sized based on framerate) for each life lost
+
+    """
+
     metadata = {'render.modes': ['human', 'rgb_array']}
 
     def __init__(self, mode='agent', lives=10):
@@ -23,6 +61,9 @@ class KuiperEscape(gym.Env):
         self.iteration = 0
         self.iteration_max = 15 * 60 * self.game.framerate  # 15 minutes
         self.n_rock_state_obs = 10
+        self.action_space = Discrete(9)
+        self.observation_space = Box(low=0, high=1, shape=(1, (self.n_rock_state_obs + 2)), dtype=np.float16)
+        self.reward_range = (-5 * self.game.framerate, 1)
 
     def step(self, action):
         """Run one timestep of the environment's dynamics. When end of
@@ -68,7 +109,7 @@ class KuiperEscape(gym.Env):
             'lives_after': lives_after
         }
 
-        return observation, reward, done, info
+        return (observation, reward, done, info)
 
     def reset(self):
         """Resets the environment to an initial state and returns an initial
@@ -123,13 +164,36 @@ class KuiperEscape(gym.Env):
 
         if mode == 'rgb_array':
             surf = pygame.display.get_surface()
-            rgb_array = pygame.surfarray.array3d()
+            rgb_array = pygame.surfarray.array3d(surf)
             rgb_array = rgb_array.astype(np.uint8)
             rgb_array = np.rot90(rgb_array)
             rgb_array = np.flip(rgb_array)
             rgb_array = np.fliplr(rgb_array)
             return rgb_array
     
+    def close(self):
+        """Override close in your subclass to perform any necessary cleanup.
+        Environments will automatically close() themselves when
+        garbage collected or when the program exits.
+        """
+        pass
+
+    def seed(self, seed=None):
+        """Sets the seed for this env's random number generator(s).
+        Note:
+            Some environments use multiple pseudorandom number generators.
+            We want to capture all such seeds used in order to ensure that
+            there aren't accidental correlations between multiple generators.
+        Returns:
+            list<bigint>: Returns the list of seeds used in this env's random
+              number generators. The first value in the list should be the
+              "main" seed, or the value which a reproducer should pass to
+              'seed'. Often, the main seed equals the provided 'seed', but
+              this won't be true if seed=None, for example.
+        """
+        self.np_random, seed = seeding.np_random(seed)
+        return [seed]
+
     def get_state(self):
         state_player = self.get_player_state()
         state_rocks = self.get_rock_state()

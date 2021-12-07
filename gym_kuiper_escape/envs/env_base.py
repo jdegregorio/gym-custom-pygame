@@ -59,14 +59,15 @@ class KuiperEscape(gym.Env):
         self, 
         mode='agent',
         lives_start=1,
-        rock_rate_start=1.5,
+        rock_rate_start=2,
         rock_rate_increment=1e6,
         rock_size_min=50,
         rock_size_max=50,
-        rock_speed_min=4,
-        rock_speed_max=4
+        rock_speed_min=5,
+        rock_speed_max=5
     ):
         self.mode = mode
+        self.output_size=100
         self.lives_start = lives_start
         self.rock_rate_start=rock_rate_start
         self.rock_rate_increment=rock_rate_increment
@@ -86,10 +87,9 @@ class KuiperEscape(gym.Env):
         )
         self.iteration = 0
         self.iteration_max = 15 * 60 * self.game.framerate  # 15 minutes
-        self.n_rock_state_obs = 10
         self.init_obs = self.get_state()
         self.action_space = Discrete(9)
-        self.observation_space = Box(low=0, high=1, shape=self.init_obs.shape, dtype=np.float16)
+        self.observation_space = Box(low=0, high=1, shape=(self.output_size, self.output_size, 3), dtype=np.float16)
         self.reward_range = (0, 1)
 
     def step(self, action):
@@ -114,7 +114,9 @@ class KuiperEscape(gym.Env):
         observation = self.get_state()
 
         # Gather reward
-        xp, yp = self.get_player_state()  # initially between 0-1
+        xp, yp = self.get_position(self.game.player)
+        xp = xp / self.game.screen_width
+        yp = yp / self.game.screen_height
         dist_from_center = math.sqrt((xp-0.5)**2 + (yp-0.5)**2)
         if dist_from_center < 0.35:
             reward = 1
@@ -230,86 +232,24 @@ class KuiperEscape(gym.Env):
         return [seed]
 
     def get_state(self):
-        state_player = self.get_player_state()
-        state_rocks = self.get_rock_state()
-        state_rocks = state_rocks.flatten()
-        state = np.concatenate([state_player, state_rocks])
-        state = state.astype(np.float16)
-        state = state.reshape((1, len(state)))
+        state = self.get_rgb_state()
         return state
 
-    def get_player_state(self):
-        x, y = self.get_position(self.game.player)
-        x = x / self.game.screen_width
-        y = y / self.game.screen_height
-        array_state_player = np.array([x, y])
-        array_state_player = array_state_player.astype(np.float16)
-        return array_state_player
-
-    def get_rock_state(self):
-
-        # Get rock states and sort by proximity
-        ls_rock_states = []
-        for rock in self.game.rocks.sprites():
-            x, y = self.get_position(rock)
-            x = x / self.game.screen_width
-            y = y / self.game.screen_height
-            dist_max = math.sqrt(self.game.screen_height**2 + self.game.screen_width**2)
-            dist = self.get_rock_distance(rock) / dist_max
-            rock_angle = self.get_rock_angle(rock) / 360
-            size = rock.size / rock.size_max
-            speed = rock.speed / rock.speed_max
-            heading = (self.get_rock_heading(rock) / 360) + 0.5
-            ls_rock_states.append([dist, x, y, rock_angle, size, speed, heading])
-        ls_rock_states.sort()
-
-        # Construct rock observation array
-        n_rock_obs = 10
-        array_state_rocks = np.zeros((self.n_rock_state_obs, 7))
-        for i in range(n_rock_obs):
-            try:
-                array_state_rocks[i, :] = ls_rock_states[i]
-            except:
-                pass
-        array_state_rocks = array_state_rocks.astype(np.float16)
-        return array_state_rocks
+    def get_rgb_state(self):
+        surf = pygame.display.get_surface()
+        array = pygame.surfarray.array3d(surf).astype(np.uint8)
+        
+        array.astype(np.float16)
+        bin_size = int(self.game.screen_height / self.output_size)
+        array = array.reshape((self.output_size, bin_size, self.output_size, bin_size, 3)).max(3).max(1)
+        array = array / 255
+        return array
 
     def get_position(self, sprite):
         center = sprite.rect.center
         x = round(center[0])
         y = self.game.screen_height - round(center[1])  # flip pygame coordnates
         return (x, y)
-
-    def get_distance(self, sprite_1, sprite_2):
-        x1, y1 = self.get_position(sprite_1)
-        x2, y2 = self.get_position(sprite_2)
-        return int(math.sqrt((x2 - x1)**2 + (y2 - y1)**2))
-
-    def get_rock_distance(self, rock):
-        return int(self.get_distance(self.game.player, rock))
-
-    def get_angle(self, sprite_1, sprite_2):
-        x1, y1 = self.get_position(sprite_1)
-        x2, y2 = self.get_position(sprite_2)
-        x_rel = x2 - x1
-        y_rel = y2 - y1
-        y_rel = y_rel
-        angle = math.atan2(y_rel, x_rel)
-        angle = math.degrees(angle) % 360
-        return int(angle)
-
-    def get_rock_angle(self, rock):
-        return int(self.get_angle(self.game.player, rock))
-
-    def get_rock_heading(self, rock):
-        angle_speed = math.degrees(rock.angle)
-        angle_player = self.get_angle(rock, self.game.player)
-        angle_rel = angle_player - angle_speed
-        if angle_rel > 180:
-            angle_rel = angle_rel % 180 - 180
-        if angle_rel < -180:
-            angle_rel = angle_rel % 180
-        return int(angle_rel)
 
 
 if __name__ == "__main__":

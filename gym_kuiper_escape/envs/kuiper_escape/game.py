@@ -64,7 +64,7 @@ class Game:
         self.screen_width = 800
         self.screen_height = 800
         self.screen_dims = (self.screen_width, self.screen_height)
-        self.framerate = 50
+        self.framerate = 30
         self.screen = pygame.display.set_mode(
             self.screen_dims, 
             flags=self.screen_mode

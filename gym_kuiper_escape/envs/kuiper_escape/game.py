@@ -35,8 +35,12 @@ class Game:
         self, 
         mode='human',
         lives=3,
-        rate_start=2,  # Number of rocks/second generated
-        rate_increment=50  # Add additional rock/second every N seconds
+        rock_rate_start=2,  # Number of rocks/second generated
+        rock_rate_increment=50,  # Add additional rock/second every N seconds
+        rock_size_min=20,
+        rock_size_max=100,
+        rock_speed_min=2,
+        rock_speed_max=10
     ):
         # Initialize pygame
         pygame.init()
@@ -44,8 +48,12 @@ class Game:
         self.font = pygame.font.SysFont("monospace", 24)
         self.score = 0
         self.lives = lives
-        self.rate_start = rate_start
-        self.rate_increment = rate_increment
+        self.rock_rate_start = rock_rate_start
+        self.rock_rate_increment = rock_rate_increment
+        self.rock_size_min = rock_size_min
+        self.rock_size_max = rock_size_max
+        self.rock_speed_min = rock_speed_min
+        self.rock_speed_max = rock_speed_max
         self.clock = pygame.time.Clock()
 
         # Define constants for the screen width and height
@@ -72,9 +80,13 @@ class Game:
     def step_frame(self, action):
 
         # Add rocks, increase rate over time
-        thres  = (1 / self.framerate) * (self.rate_start + (self.score / self.rate_increment))
+        thres  = (1 / self.framerate) * (self.rock_rate_start + (self.score / self.rock_rate_increment))
         if random.random() < thres:
-            new_rock = Rock(screen_dims=self.screen_dims)
+            new_rock = Rock(
+                screen_dims=self.screen_dims,
+                size_min=self.rock_size_min, size_max=self.rock_size_max,
+                speed_min=self.rock_speed_min, speed_max=self.rock_speed_max
+            )
             self.rocks.add(new_rock)
             self.all_sprites.add(new_rock)
 

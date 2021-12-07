@@ -55,17 +55,42 @@ class KuiperEscape(gym.Env):
 
     metadata = {'render.modes': ['human', 'rgb_array']}
 
-    def __init__(self, mode='agent', lives_start=10):
+    def __init__(
+        self, 
+        mode='agent',
+        lives_start=1,
+        rock_rate_start=1.5,
+        rock_rate_increment=1e6,
+        rock_size_min=50,
+        rock_size_max=50,
+        rock_speed_min=4,
+        rock_speed_max=4
+    ):
         self.mode = mode
         self.lives_start = lives_start
-        self.game = Game(mode=mode, lives=self.lives_start)
+        self.rock_rate_start=rock_rate_start
+        self.rock_rate_increment=rock_rate_increment
+        self.rock_size_min=rock_size_min
+        self.rock_size_max=rock_size_max
+        self.rock_speed_min=rock_speed_min
+        self.rock_speed_max=rock_speed_max
+        self.game = Game(
+            mode=self.mode,
+            lives=self.lives_start, 
+            rock_rate_start=self.rock_rate_start,
+            rock_rate_increment=self.rock_rate_increment,
+            rock_size_min=self.rock_size_min,
+            rock_size_max=self.rock_size_max,
+            rock_speed_min=self.rock_speed_min,
+            rock_speed_max=self.rock_speed_max
+        )
         self.iteration = 0
         self.iteration_max = 15 * 60 * self.game.framerate  # 15 minutes
         self.n_rock_state_obs = 10
         self.init_obs = self.get_state()
         self.action_space = Discrete(9)
         self.observation_space = Box(low=0, high=1, shape=self.init_obs.shape, dtype=np.float16)
-        self.reward_range = (-5 * self.game.framerate, 1)
+        self.reward_range = (0, 1)
 
     def step(self, action):
         """Run one timestep of the environment's dynamics. When end of
@@ -82,21 +107,22 @@ class KuiperEscape(gym.Env):
         """
 
         # Step frame
-        lives_before = self.game.player.lives
         self.game.step_frame(action)
-        lives_after = self.game.player.lives
         self.iteration += 1
 
         # Gather observation
         observation = self.get_state()
 
         # Gather reward
-        reward = 1
-        if lives_after < lives_before:
-            reward = -5 * self.game.framerate
+        xp, yp = self.get_player_state()  # initially between 0-1
+        dist_from_center = math.sqrt((xp-0.5)**2 + (yp-0.5)**2)
+        if dist_from_center < 0.35:
+            reward = 1
+        else:
+            reward = 0
 
         # Check stop conditions
-        if lives_after == 0:
+        if self.game.player.lives == 0:
             done = True
         elif self.iteration > self.iteration_max:
             done = True
@@ -106,9 +132,7 @@ class KuiperEscape(gym.Env):
         # Gather metadata/info
         info = {
             'iteration': self.iteration,
-            'score': self.game.score, 
-            'lives_before': lives_before,
-            'lives_after': lives_after
+            'score': self.game.score
         }
 
         return (observation, reward, done, info)
@@ -124,7 +148,16 @@ class KuiperEscape(gym.Env):
         Returns:
             observation (object): the initial observation.
         """
-        self.game = Game(mode='agent', lives=self.lives_start)
+        self.game = Game(
+            mode=self.mode,
+            lives=self.lives_start, 
+            rock_rate_start=self.rock_rate_start,
+            rock_rate_increment=self.rock_rate_increment,
+            rock_size_min=self.rock_size_min,
+            rock_size_max=self.rock_size_max,
+            rock_speed_min=self.rock_speed_min,
+            rock_speed_max=self.rock_speed_max
+        )
         self.iteration = 0
         observation = self.get_state()
         return observation
@@ -207,6 +240,8 @@ class KuiperEscape(gym.Env):
 
     def get_player_state(self):
         x, y = self.get_position(self.game.player)
+        x = x / self.game.screen_width
+        y = y / self.game.screen_height
         array_state_player = np.array([x, y])
         array_state_player = array_state_player.astype(np.float16)
         return array_state_player

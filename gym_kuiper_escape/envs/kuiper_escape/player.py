@@ -15,15 +15,14 @@ path_base = os.path.dirname(os.path.realpath(__file__))
 path_asset = os.path.join(path_base, 'assets/spaceship.png')
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, screen_dims, lives=3, move_increment=5):
+    def __init__(self, screen_size, lives=3, move_increment=5):
         super(Player, self).__init__()
-        self.screen_width = screen_dims[0]
-        self.screen_height = screen_dims[1]
+        self.screen_size = screen_size
         self.lives = lives
         self.move_increment = move_increment
         self.surf = pygame.image.load(path_asset)
         aspect_ratio = self.surf.get_height() / self.surf.get_width()
-        scaled_height = self.screen_height * 0.05
+        scaled_height = self.screen_size * 0.05
         scaled_width = scaled_height * aspect_ratio
         self.surf = pygame.transform.scale(
             self.surf, (scaled_height, scaled_width)
@@ -31,8 +30,8 @@ class Player(pygame.sprite.Sprite):
         self.surf = self.surf.convert_alpha()
         self.rect = self.surf.get_rect(
             center = (
-                self.screen_width  / 2, 
-                self.screen_height / 2
+                self.screen_size  / 2, 
+                self.screen_size / 2
             )
         )
 
@@ -58,12 +57,12 @@ class Player(pygame.sprite.Sprite):
         # Keep player on the screen
         if self.rect.left < 0:
             self.rect.left = 0
-        if self.rect.right > self.screen_width:
-            self.rect.right = self.screen_width
+        if self.rect.right > self.screen_size:
+            self.rect.right = self.screen_size
         if self.rect.top <= 0:
             self.rect.top = 0
-        if self.rect.bottom >= self.screen_height:
-            self.rect.bottom = self.screen_height
+        if self.rect.bottom >= self.screen_size:
+            self.rect.bottom = self.screen_size
 
     def die(self):
         self.lives -= 1

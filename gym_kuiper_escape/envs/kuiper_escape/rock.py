@@ -11,12 +11,11 @@ path_base = os.path.dirname(os.path.realpath(__file__))
 path_asset = os.path.join(path_base, 'assets/asteroid.png')
 
 class Rock(pygame.sprite.Sprite):
-    def __init__(self, screen_dims,
+    def __init__(self, screen_size,
         size_min=20, size_max=100, speed_min=2, speed_max=10
     ):
         super(Rock, self).__init__()
-        self.screen_width = screen_dims[0]
-        self.screen_height = screen_dims[1]
+        self.screen_size = screen_size
         self.size_min = size_min
         self.size_max = size_max
         self.size = self.size_min + random.random() * (self.size_max - self.size_min)
@@ -36,13 +35,13 @@ class Rock(pygame.sprite.Sprite):
         elif self.dir_x <= 0 and self.dir_y > 0:
             self.face = random.choice(['right', 'bottom'])
         if self.face == 'left':
-            self.center = (-self.size / 2, random.randint(0, self.screen_height))
+            self.center = (-self.size / 2, random.randint(0, self.screen_size))
         elif self.face == 'right':
-            self.center = (self.screen_width + (self.size / 2), random.randint(0, self.screen_height))
+            self.center = (self.screen_size + (self.size / 2), random.randint(0, self.screen_size))
         elif self.face == 'top':
-            self.center = (random.randint(0, self.screen_width), -self.size / 2)
+            self.center = (random.randint(0, self.screen_size), -self.size / 2)
         elif self.face == 'bottom':
-            self.center = (random.randint(0, self.screen_width), self.screen_height + (self.size / 2))
+            self.center = (random.randint(0, self.screen_size), self.screen_size + (self.size / 2))
         self.surf = pygame.image.load(path_asset)
         self.surf = pygame.transform.scale(self.surf, (self.size, self.size))
         self.surf = self.surf.convert_alpha()
@@ -53,9 +52,9 @@ class Rock(pygame.sprite.Sprite):
         self.rect.move_ip(self.speed * self.dir_x, -self.speed * self.dir_y)
         if self.rect.right < 0:
             self.kill()
-        elif self.rect.left > self.screen_width:
+        elif self.rect.left > self.screen_size:
             self.kill()
-        elif self.rect.top > self.screen_height:
+        elif self.rect.top > self.screen_size:
             self.kill()
         elif self.rect.bottom < 0:
             self.kill()

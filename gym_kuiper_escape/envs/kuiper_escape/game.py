@@ -45,7 +45,7 @@ class Game:
         # Initialize pygame
         pygame.init()
         self.mode = mode
-        self.font = pygame.font.SysFont("monospace", 24)
+        self.font = pygame.font.SysFont("monospace", 12)
         self.score = 0
         self.lives = lives
         self.rock_rate_start = rock_rate_start
@@ -61,9 +61,10 @@ class Game:
             self.screen_mode = pygame.SHOWN
         else:
             self.screen_mode = pygame.HIDDEN
-        self.screen_width = 512
-        self.screen_height = 512
-        self.screen_dims = (self.screen_width, self.screen_height)
+        self.screen_size = 512
+        self.screen_width = self.screen_size
+        self.screen_height = self.screen_size
+        self.screen_dims = (self.screen_size, self.screen_size)
         self.framerate = 10
         self.screen = pygame.display.set_mode(
             self.screen_dims, 
@@ -72,7 +73,7 @@ class Game:
 
         # Instantiate player and sprite groups
         self.player = Player(
-            screen_dims=self.screen_dims, 
+            screen_size=self.screen_size, 
             lives=self.lives,
             move_increment=200/self.framerate
         )
@@ -86,7 +87,7 @@ class Game:
         thres  = (1 / self.framerate) * (self.rock_rate_start + (self.score / self.rock_rate_increment))
         if random.random() < thres:
             new_rock = Rock(
-                screen_dims=self.screen_dims,
+                screen_size=self.screen_size,
                 size_min=self.rock_size_min, size_max=self.rock_size_max,
                 speed_min=self.rock_speed_min, speed_max=self.rock_speed_max
             )
@@ -149,7 +150,7 @@ class Game:
         info_score = self.font.render("Score = " + str(math.floor(self.score)), 1, (255, 255, 255))
         info_lives = self.font.render("Lives =  " + str(self.player.lives), 1, (255, 255, 255))
         self.screen.blit(info_score, (5, 10))
-        self.screen.blit(info_lives, (self.screen_width - 200, 10))
+        self.screen.blit(info_lives, (self.screen_size - 100, 10))
         for entity in self.all_sprites:
             self.screen.blit(entity.surf, entity.rect)
 

@@ -57,17 +57,19 @@ class KuiperEscape(gym.Env):
         rock_size_min=50,
         rock_size_max=50,
         rock_speed_min=5,
-        rock_speed_max=5
+        rock_speed_max=5,
+        framerate=10
     ):
         self.mode = mode
-        self.output_size=128
+        self.output_size = 128
         self.lives_start = lives_start
-        self.rock_rate_start=rock_rate_start
-        self.rock_rate_increment=rock_rate_increment
-        self.rock_size_min=rock_size_min
-        self.rock_size_max=rock_size_max
-        self.rock_speed_min=rock_speed_min
-        self.rock_speed_max=rock_speed_max
+        self.rock_rate_start = rock_rate_start
+        self.rock_rate_increment = rock_rate_increment
+        self.rock_size_min = rock_size_min
+        self.rock_size_max = rock_size_max
+        self.rock_speed_min = rock_speed_min
+        self.rock_speed_max = rock_speed_max
+        self.framerate = framerate
         self.game = Game(
             mode=self.mode,
             lives=self.lives_start, 
@@ -76,7 +78,8 @@ class KuiperEscape(gym.Env):
             rock_size_min=self.rock_size_min,
             rock_size_max=self.rock_size_max,
             rock_speed_min=self.rock_speed_min,
-            rock_speed_max=self.rock_speed_max
+            rock_speed_max=self.rock_speed_max,
+            framerate=self.framerate
         )
         self.iteration = 0
         self.iteration_max = 15 * 60 * self.game.framerate  # 15 minutes
@@ -151,7 +154,8 @@ class KuiperEscape(gym.Env):
             rock_size_min=self.rock_size_min,
             rock_size_max=self.rock_size_max,
             rock_speed_min=self.rock_speed_min,
-            rock_speed_max=self.rock_speed_max
+            rock_speed_max=self.rock_speed_max,
+            framerate=self.framerate
         )
         self.iteration = 0
         observation = self.get_state()
@@ -260,5 +264,5 @@ class KuiperEscape(gym.Env):
 
 
 if __name__ == "__main__":
-    env = KuiperEscape(mode='human')
+    env = KuiperEscape(mode='human', framerate=30)
     env.game.play()

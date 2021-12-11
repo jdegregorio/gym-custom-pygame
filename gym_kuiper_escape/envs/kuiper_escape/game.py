@@ -40,7 +40,8 @@ class Game:
         rock_size_min=20,
         rock_size_max=100,
         rock_speed_min=2,
-        rock_speed_max=10
+        rock_speed_max=10,
+        framerate=10
     ):
         # Initialize pygame
         pygame.init()
@@ -65,7 +66,7 @@ class Game:
         self.screen_width = self.screen_size
         self.screen_height = self.screen_size
         self.screen_dims = (self.screen_size, self.screen_size)
-        self.framerate = 10
+        self.framerate = framerate
         self.screen = pygame.display.set_mode(
             self.screen_dims, 
             flags=self.screen_mode

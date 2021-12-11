@@ -52,17 +52,19 @@ class KuiperEscape(gym.Env):
         self, 
         mode='agent',
         lives_start=1,
+        player_speed=0.5,
         rock_rate_start=1,
         rock_rate_increment=1e6,
+        rock_speed_min=0.1,
+        rock_speed_max=0.3,
         rock_size_min=50,
         rock_size_max=50,
-        rock_speed_min=5,
-        rock_speed_max=5,
         framerate=10
     ):
         self.mode = mode
         self.output_size = 128
         self.lives_start = lives_start
+        self.player_speed = player_speed
         self.rock_rate_start = rock_rate_start
         self.rock_rate_increment = rock_rate_increment
         self.rock_size_min = rock_size_min
@@ -73,12 +75,13 @@ class KuiperEscape(gym.Env):
         self.game = Game(
             mode=self.mode,
             lives=self.lives_start, 
+            player_speed=self.player_speed,
             rock_rate_start=self.rock_rate_start,
             rock_rate_increment=self.rock_rate_increment,
-            rock_size_min=self.rock_size_min,
-            rock_size_max=self.rock_size_max,
             rock_speed_min=self.rock_speed_min,
             rock_speed_max=self.rock_speed_max,
+            rock_size_min=self.rock_size_min,
+            rock_size_max=self.rock_size_max,
             framerate=self.framerate
         )
         self.iteration = 0
@@ -264,5 +267,5 @@ class KuiperEscape(gym.Env):
 
 
 if __name__ == "__main__":
-    env = KuiperEscape(mode='human', framerate=30)
+    env = KuiperEscape(mode='human', framerate=60)
     env.game.play()

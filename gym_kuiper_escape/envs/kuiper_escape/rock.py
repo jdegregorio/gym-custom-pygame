@@ -11,8 +11,9 @@ path_base = os.path.dirname(os.path.realpath(__file__))
 path_asset = os.path.join(path_base, 'assets/asteroid.png')
 
 class Rock(pygame.sprite.Sprite):
-    def __init__(self, screen_size,
-        size_min=20, size_max=100, speed_min=2, speed_max=10
+    def __init__(self, screen_size, 
+        speed_min=2, speed_max=10,
+        size_min=20, size_max=100
     ):
         super(Rock, self).__init__()
         self.screen_size = screen_size

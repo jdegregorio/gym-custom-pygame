@@ -35,12 +35,13 @@ class Game:
         self, 
         mode='human',
         lives=3,
+        player_speed=0.5,  # portion of screen traversed in one second
         rock_rate_start=2,  # Number of rocks/second generated
         rock_rate_increment=50,  # Add additional rock/second every N seconds
         rock_size_min=20,
         rock_size_max=100,
-        rock_speed_min=2,
-        rock_speed_max=10,
+        rock_speed_min=0.1,  # portion of screen traversed in one second
+        rock_speed_max=0.3,  # portion of screen traversed in one second
         framerate=10
     ):
         # Initialize pygame
@@ -49,12 +50,13 @@ class Game:
         self.font = pygame.font.SysFont("monospace", 12)
         self.score = 0
         self.lives = lives
+        self.player_speed = player_speed
         self.rock_rate_start = rock_rate_start
         self.rock_rate_increment = rock_rate_increment
-        self.rock_size_min = rock_size_min
-        self.rock_size_max = rock_size_max
         self.rock_speed_min = rock_speed_min
         self.rock_speed_max = rock_speed_max
+        self.rock_size_min = rock_size_min
+        self.rock_size_max = rock_size_max
         self.clock = pygame.time.Clock()
 
         # Define constants for the screen width and height
@@ -76,7 +78,7 @@ class Game:
         self.player = Player(
             screen_size=self.screen_size, 
             lives=self.lives,
-            move_increment=200/self.framerate
+            speed=self.player_speed * self.screen_size * (1 / self.framerate)
         )
         self.rocks = pygame.sprite.Group()
         self.all_sprites = pygame.sprite.Group()
@@ -89,8 +91,10 @@ class Game:
         if random.random() < thres:
             new_rock = Rock(
                 screen_size=self.screen_size,
-                size_min=self.rock_size_min, size_max=self.rock_size_max,
-                speed_min=self.rock_speed_min, speed_max=self.rock_speed_max
+                size_min=self.rock_size_min,
+                size_max=self.rock_size_max,
+                speed_min=self.rock_speed_min * self.screen_size * (1 / self.framerate),
+                speed_max=self.rock_speed_max * self.screen_size * (1 / self.framerate)
             )
             self.rocks.add(new_rock)
             self.all_sprites.add(new_rock)

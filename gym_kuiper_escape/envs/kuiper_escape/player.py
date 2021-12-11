@@ -41,17 +41,17 @@ class Player(pygame.sprite.Sprite):
         if action == 1:
             self.rect.move_ip(0, -self.move_increment)
         if action == 2:
-            self.rect.move_ip(self.move_increment, -self.move_increment)
-        if action == 3:
             self.rect.move_ip(self.move_increment, 0)
-        if action == 4:
-            self.rect.move_ip(self.move_increment, self.move_increment)
-        if action == 5:
+        if action == 3:
             self.rect.move_ip(0, self.move_increment)
-        if action == 6:
-            self.rect.move_ip(-self.move_increment, self.move_increment)
-        if action == 7:
+        if action == 4:
             self.rect.move_ip(-self.move_increment, 0)
+        if action == 5:
+            self.rect.move_ip(self.move_increment, -self.move_increment)
+        if action == 6:
+            self.rect.move_ip(self.move_increment, self.move_increment)
+        if action == 7:
+            self.rect.move_ip(-self.move_increment, self.move_increment)
         if action == 8:
             self.rect.move_ip(-self.move_increment, -self.move_increment)
 

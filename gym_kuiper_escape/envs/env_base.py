@@ -27,29 +27,22 @@ class KuiperEscape(gym.Env):
     The user has the following discrete actions:
      - 0: Don't move
      - 1: Up
-     - 2: Up/Right Diagnal
-     - 3: Right
-     - 4: Right/Down Diagnal
-     - 5: Down
-     - 6: Down/Left Diagnal
-     - 7: Left
-     - 8: Left/Up Diagnal
+     - 2: Right
+     - 3: Down
+     - 4: Left
+     - 5: Up/Right Diagnal (optional)
+     - 6: Right/Down Diagnal (optional)
+     - 7: Down/Left Diagnal (optional)
+     - 8: Left/Up Diagnal (optional)
 
-    The state/observation consists of the following variables:
-     - Player Location: x, y
-     - For N-nearest Asteroids:
-        - Absolute position (x, y)
-        - Straight line distance from player
-        - Angle from player to asteroid
-        - Size
-        - Speed
-        - Heading (i.e. is it headed at or away from player)
+     Note: For actions 0-4 (none/up/right/down/left) are recommended for 
+     simplified action space.
 
-    Note: All state observations are normalized between 0 and 1
+    The state/observation consists of the following variables: TODO
 
     The environment will provide the following rewards:
-     - Reward of 1 for each step without losing life
-     - Penalty (sized based on framerate) for each life lost
+     - Reward of 1 for each frame without dying.
+     - Reward not awareded if player is in corners
 
     """
 
@@ -88,7 +81,7 @@ class KuiperEscape(gym.Env):
         self.iteration = 0
         self.iteration_max = 15 * 60 * self.game.framerate  # 15 minutes
         self.init_obs = self.get_state()
-        self.action_space = Discrete(9)
+        self.action_space = Discrete(5)
         self.observation_space = Box(low=0, high=255, shape=(self.output_size, self.output_size, 3), dtype=np.float16)
         self.reward_range = (0, 1)
 

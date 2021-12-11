@@ -80,7 +80,6 @@ class Game:
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.player)
 
-
     def step_frame(self, action):
 
         # Add rocks, increase rate over time
@@ -111,7 +110,6 @@ class Game:
         # Update score
         self.score += 1 / self.framerate
 
-
     def get_action(self, pressed_keys):
         up = pressed_keys[K_UP]
         right = pressed_keys[K_RIGHT]
@@ -122,17 +120,17 @@ class Game:
             action = 0
         elif n_pressed == 1 and up:
             action = 1
-        elif n_pressed == 2 and up and right:
-            action = 2
         elif n_pressed == 1 and right:
-            action = 3
-        elif n_pressed == 2 and right and down:
-            action = 4
+            action = 2
         elif n_pressed == 1 and down:
-            action = 5
-        elif n_pressed == 2 and down and left:
-            action = 6
+            action = 3
         elif n_pressed == 1 and left:
+            action = 4
+        elif n_pressed == 2 and up and right:
+            action = 5
+        elif n_pressed == 2 and right and down:
+            action = 6
+        elif n_pressed == 2 and down and left:
             action = 7
         elif n_pressed == 2 and left and up:
             action = 8
@@ -140,13 +138,11 @@ class Game:
             action = 0
         return action
 
-    
     def turn_on_screen(self):
         self.screen = pygame.display.set_mode(
             self.screen_dims, 
             flags=pygame.SHOWN
         )
-
 
     def render_screen(self):
         self.screen.fill((0, 0, 0))
@@ -159,7 +155,6 @@ class Game:
 
         # Update the display
         pygame.display.flip()
-
 
     def play(self):
 

@@ -15,8 +15,8 @@ class Rock(pygame.sprite.Sprite):
         size_min=20, size_max=100, speed_min=2, speed_max=10
     ):
         super(Rock, self).__init__()
-        self.screen_width = screen_dims[0] * 1.2 
-        self.screen_height = screen_dims[1] * 1.2 
+        self.screen_width = screen_dims[0]
+        self.screen_height = screen_dims[1]
         self.size_min = size_min
         self.size_max = size_max
         self.size = self.size_min + random.random() * (self.size_max - self.size_min)

@@ -15,11 +15,12 @@ path_base = os.path.dirname(os.path.realpath(__file__))
 path_asset = os.path.join(path_base, 'assets/spaceship.png')
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, screen_dims, lives=3):
+    def __init__(self, screen_dims, lives=3, move_increment=5):
         super(Player, self).__init__()
         self.screen_width = screen_dims[0]
         self.screen_height = screen_dims[1]
         self.lives = lives
+        self.move_increment = move_increment
         self.surf = pygame.image.load(path_asset)
         aspect_ratio = self.surf.get_height() / self.surf.get_width()
         scaled_height = self.screen_height * 0.05
@@ -38,21 +39,21 @@ class Player(pygame.sprite.Sprite):
     # Move the sprite based on user keypresses
     def update(self, action):
         if action == 1:
-            self.rect.move_ip(0, -5)
+            self.rect.move_ip(0, -self.move_increment)
         if action == 2:
-            self.rect.move_ip(5, -5)
+            self.rect.move_ip(self.move_increment, -self.move_increment)
         if action == 3:
-            self.rect.move_ip(5, 0)
+            self.rect.move_ip(self.move_increment, 0)
         if action == 4:
-            self.rect.move_ip(5, 5)
+            self.rect.move_ip(self.move_increment, self.move_increment)
         if action == 5:
-            self.rect.move_ip(0, 5)
+            self.rect.move_ip(0, self.move_increment)
         if action == 6:
-            self.rect.move_ip(-5, 5)
+            self.rect.move_ip(-self.move_increment, self.move_increment)
         if action == 7:
-            self.rect.move_ip(-5, 0)
+            self.rect.move_ip(-self.move_increment, 0)
         if action == 8:
-            self.rect.move_ip(-5, -5)
+            self.rect.move_ip(-self.move_increment, -self.move_increment)
 
         # Keep player on the screen
         if self.rect.left < 0:

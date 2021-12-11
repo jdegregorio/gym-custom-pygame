@@ -59,7 +59,7 @@ class KuiperEscape(gym.Env):
         self, 
         mode='agent',
         lives_start=1,
-        rock_rate_start=2,
+        rock_rate_start=1,
         rock_rate_increment=1e6,
         rock_size_min=50,
         rock_size_max=50,
@@ -67,7 +67,7 @@ class KuiperEscape(gym.Env):
         rock_speed_max=5
     ):
         self.mode = mode
-        self.output_size=100
+        self.output_size=128
         self.lives_start = lives_start
         self.rock_rate_start=rock_rate_start
         self.rock_rate_increment=rock_rate_increment
@@ -89,7 +89,7 @@ class KuiperEscape(gym.Env):
         self.iteration_max = 15 * 60 * self.game.framerate  # 15 minutes
         self.init_obs = self.get_state()
         self.action_space = Discrete(9)
-        self.observation_space = Box(low=0, high=1, shape=(self.output_size, self.output_size, 3), dtype=np.float16)
+        self.observation_space = Box(low=0, high=255, shape=(self.output_size, self.output_size, 3), dtype=np.float16)
         self.reward_range = (0, 1)
 
     def step(self, action):
@@ -232,17 +232,31 @@ class KuiperEscape(gym.Env):
         return [seed]
 
     def get_state(self):
-        state = self.get_rgb_state()
-        return state
+        return self.get_rgb_state()
+
+    # def get_state(self):
+    #     self.grid = np.zeros((self.output_size, self.output_size))
+    #     for rock in self.game.rocks.sprites():
+    #         xr, yr = self.get_position(rock)
+    #         size = rock.size / rock.size_max
+    #         self.update_grid(xr, yr, size)
+    #     xp, yp = self.get_position(self.game.player)
+    #     self.update_grid(xp, yp, -1)
+    #     return self.grid
+
+    # def update_grid(self, x, y, value):
+    #     ratio = self.output_size / self.game.screen_height
+    #     x = int(x * ratio)
+    #     y = int(y * ratio)
+    #     self.grid[x, y] = value
 
     def get_rgb_state(self):
         surf = pygame.display.get_surface()
         array = pygame.surfarray.array3d(surf).astype(np.uint8)
-        
         array.astype(np.float16)
         bin_size = int(self.game.screen_height / self.output_size)
         array = array.reshape((self.output_size, bin_size, self.output_size, bin_size, 3)).max(3).max(1)
-        array = array / 255
+        array = array.astype(np.uint8)
         return array
 
     def get_position(self, sprite):

@@ -61,17 +61,21 @@ class Game:
             self.screen_mode = pygame.SHOWN
         else:
             self.screen_mode = pygame.HIDDEN
-        self.screen_width = 800
-        self.screen_height = 800
+        self.screen_width = 512
+        self.screen_height = 512
         self.screen_dims = (self.screen_width, self.screen_height)
-        self.framerate = 30
+        self.framerate = 10
         self.screen = pygame.display.set_mode(
             self.screen_dims, 
             flags=self.screen_mode
         )
 
         # Instantiate player and sprite groups
-        self.player = Player(screen_dims=self.screen_dims, lives=self.lives)
+        self.player = Player(
+            screen_dims=self.screen_dims, 
+            lives=self.lives,
+            move_increment=200/self.framerate
+        )
         self.rocks = pygame.sprite.Group()
         self.all_sprites = pygame.sprite.Group()
         self.all_sprites.add(self.player)

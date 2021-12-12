@@ -57,8 +57,8 @@ class KuiperEscape(gym.Env):
         rock_rate=1,
         rock_speed_min=0.1,
         rock_speed_max=0.1,
-        rock_size_min=30,
-        rock_size_max=30,
+        rock_size_min=0.04,
+        rock_size_max=0.04,
         framerate=10
     ):
         self.mode = mode
@@ -252,6 +252,6 @@ if __name__ == "__main__":
         mode='human',
         rock_rate=2,
         lives_start=1,
-        framerate=30
+        framerate=10
     )
     env.game.play()

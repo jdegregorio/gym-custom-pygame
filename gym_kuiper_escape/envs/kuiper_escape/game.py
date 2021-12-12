@@ -37,8 +37,8 @@ class Game:
         lives=3,
         player_speed=0.5,  # portion of screen traversed in one second
         rock_rate=2,  # Number of rocks/second generated
-        rock_size_min=20,
-        rock_size_max=100,
+        rock_size_min=0.04,
+        rock_size_max=0.08,
         rock_speed_min=0.1,  # portion of screen traversed in one second
         rock_speed_max=0.3,  # portion of screen traversed in one second
         framerate=10
@@ -122,7 +122,7 @@ class Game:
         self.time = (self.frame / self.framerate)
 
         if new_rock is not None:
-            print(f'frame: {self.frame}, rock_face: {new_rock.face}, rock_center: {new_rock.center}, rock_angle: {math.degrees(new_rock.angle)}, rock_xdir: {new_rock.dir_x}, rock_ydir: {new_rock.dir_y}, rock_speed: {new_rock.speed}')
+            print(f'frame: {self.frame}, rock_size: {new_rock.size}, rock_face: {new_rock.face}, rock_center: {new_rock.center}, rock_angle: {math.degrees(new_rock.angle)}, rock_xdir: {new_rock.dir_x}, rock_ydir: {new_rock.dir_y}, rock_speed: {new_rock.speed}')
 
     def get_action(self, pressed_keys):
         up = pressed_keys[K_UP]

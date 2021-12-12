@@ -53,16 +53,17 @@ class KuiperEscape(gym.Env):
         self, 
         mode='agent',
         lives_start=1,
-        player_speed=0.3,
+        player_speed=0.5,
         rock_rate=1,
-        rock_speed_min=0.1,
-        rock_speed_max=0.1,
-        rock_size_min=0.08,
-        rock_size_max=0.08,
-        framerate=10
+        rock_speed_min=0.05,
+        rock_speed_max=0.10,
+        rock_size_min=0.05,
+        rock_size_max=0.10,
+        framerate=10,
+        output_size=32
     ):
         self.mode = mode
-        self.output_size = 128
+        self.output_size = output_size
         self.lives_start = lives_start
         self.player_speed = player_speed
         self.rock_rate = rock_rate
@@ -178,13 +179,7 @@ class KuiperEscape(gym.Env):
             self.game.render_screen()
 
         if mode == 'rgb_array':
-            surf = pygame.display.get_surface()
-            rgb_array = pygame.surfarray.array3d(surf)
-            rgb_array = rgb_array.astype(np.uint8)
-            rgb_array = np.rot90(rgb_array)
-            rgb_array = np.flip(rgb_array)
-            rgb_array = np.fliplr(rgb_array)
-            return rgb_array
+            return self.get_rgb_array()
     
     def close(self):
         """Override close in your subclass to perform any necessary cleanup.
@@ -210,16 +205,23 @@ class KuiperEscape(gym.Env):
         return [seed]
 
     def get_state(self):
-        return self.get_rgb_state()
+        rgb_array = self.get_rgb_array()
+        rgb_array = self.down_sample_rgb_array(rgb_array, self.output_size)
+        return rgb_array
 
-    def get_rgb_state(self):
+    def get_rgb_array(self):
         surf = pygame.display.get_surface()
-        array = pygame.surfarray.array3d(surf).astype(np.uint8)
-        array.astype(np.float16)
-        bin_size = int(self.game.screen_size / self.output_size)
-        array = array.reshape((self.output_size, bin_size, self.output_size, bin_size, 3)).max(3).max(1)
+        array = pygame.surfarray.array3d(surf).astype(np.float16)
+        array = np.rot90(array)
+        array = np.flip(array)
+        array = np.fliplr(array)
         array = array.astype(np.uint8)
         return array
+
+    def down_sample_rgb_array(self, array, output_size):
+        bin_size = int(self.game.screen_size / output_size)
+        array_ds = array.reshape((output_size, bin_size, output_size, bin_size, 3)).max(3).max(1)
+        return array_ds
 
     def init_game(self):
         game = Game(
@@ -240,8 +242,12 @@ if __name__ == "__main__":
 
     env = KuiperEscape(
         mode='human',
-        rock_rate=2,
-        lives_start=1,
-        framerate=100
+        player_speed=0.5,
+        rock_rate=1,
+        rock_speed_min=0.05,
+        rock_speed_max=0.10,
+        rock_size_min=0.05,
+        rock_size_max=0.10,
+        framerate=10
     )
     env.game.play()

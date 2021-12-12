@@ -28,31 +28,49 @@ class Player(pygame.sprite.Sprite):
             self.surf, (scaled_height, scaled_width)
         )
         self.surf = self.surf.convert_alpha()
+        self.x = self.screen_size  / 2
+        self.y = self.screen_size / 2
         self.rect = self.surf.get_rect(
-            center = (
-                self.screen_size  / 2, 
-                self.screen_size / 2
-            )
+            centerx = self.x,
+            centery = self.y
         )
 
     # Move the sprite based on user keypresses
     def update(self, action):
         if action == 1:
-            self.rect.move_ip(0, -self.speed)
+            self.y += -self.speed
+            self.rect.centery = int(self.y)
+            #self.rect.move_ip(0, -self.speed)
         if action == 2:
-            self.rect.move_ip(self.speed, 0)
+            self.x += self.speed
+            self.rect.centerx = int(self.x)
+            #self.rect.move_ip(self.speed, 0)
         if action == 3:
-            self.rect.move_ip(0, self.speed)
+            self.y += self.speed
+            self.rect.centery = int(self.y)
         if action == 4:
-            self.rect.move_ip(-self.speed, 0)
+            self.x += -self.speed
+            self.rect.centerx = int(self.x)
         if action == 5:
-            self.rect.move_ip(self.speed, -self.speed)
+            self.x += self.speed
+            self.y += -self.speed
+            self.rect.centerx = int(self.x)
+            self.rect.centery = int(self.y)
         if action == 6:
-            self.rect.move_ip(self.speed, self.speed)
+            self.x += self.speed
+            self.y += self.speed
+            self.rect.centerx = int(self.x)
+            self.rect.centery = int(self.y)
         if action == 7:
-            self.rect.move_ip(-self.speed, self.speed)
+            self.x += -self.speed
+            self.y += self.speed
+            self.rect.centerx = int(self.x)
+            self.rect.centery = int(self.y)
         if action == 8:
-            self.rect.move_ip(-self.speed, -self.speed)
+            self.x += -self.speed
+            self.y += -self.speed
+            self.rect.centerx = int(self.x)
+            self.rect.centery = int(self.y)
 
         # Keep player on the screen
         if self.rect.left < 0:

@@ -252,6 +252,6 @@ if __name__ == "__main__":
         mode='human',
         rock_rate=2,
         lives_start=1,
-        framerate=20
+        framerate=100
     )
     env.game.play()

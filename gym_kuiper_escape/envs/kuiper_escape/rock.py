@@ -23,37 +23,39 @@ class Rock(pygame.sprite.Sprite):
         self.speed_min = speed_min
         self.speed_max = speed_max
         self.speed = random.uniform(self.speed_min, self.speed_max)
-        self.angle = random.random() * math.pi
-        self.face = random.choice(['bottom', 'left', 'top', 'right'])
-        if self.face == 'bottom':
-            self.angle = self.angle
-            self.dir_x = math.cos(self.angle)
-            self.dir_y = math.sin(self.angle)
-            # TODO: offset size so that it's possible the right comes in from the complete edge
-            self.center = (random.randint(0, self.screen_size), self.screen_size + (self.size / 2))
+        self.face = random.choice(['top', 'right', 'bottom', 'left'])
+        self.angle_limit = 0.1*math.pi
+        self.angle = random.uniform(self.angle_limit, math.pi - self.angle_limit)
+        if self.face == 'top':
+            self.angle += math.pi
+            self.x = random.randint(0, self.screen_size)
+            self.y = -self.size / 2
         elif self.face == 'right':
-            self.angle = self.angle + (1 * (math.pi / 4))
-            self.dir_x = math.cos(self.angle)
-            self.dir_y = math.sin(self.angle)
-            self.center = (self.screen_size + (self.size) / 2, random.randint(0, self.screen_size))
-        elif self.face == 'top':
-            self.angle = self.angle + (2 * (math.pi / 4))
-            self.dir_x = math.cos(self.angle)
-            self.dir_y = math.sin(self.angle)
-            self.center = (random.randint(0, self.screen_size), -self.size / 2)
+            self.angle += 0.5 * math.pi
+            self.x = self.screen_size + (self.size) / 2
+            self.y = random.randint(0, self.screen_size)
+        elif self.face == 'bottom':
+            self.angle = self.angle
+            self.x = random.randint(0, self.screen_size)
+            self.y = self.screen_size + (self.size / 2)
         elif self.face == 'left':
-            self.angle = self.angle + (3 * (math.pi / 4))
-            self.dir_x = math.cos(self.angle)
-            self.dir_y = math.sin(self.angle)
-            self.center = (-self.size / 2, random.randint(0, self.screen_size))
+            self.angle += 1.5 * math.pi
+            self.x = -self.size / 2
+            self.y = random.randint(0, self.screen_size)
+        self.angle = self.angle % (2 * math.pi)
+        self.dir_x = math.cos(self.angle)
+        self.dir_y = math.sin(self.angle)
         self.surf = pygame.image.load(path_asset)
         self.surf = pygame.transform.scale(self.surf, (self.size, self.size))
         self.surf = self.surf.convert_alpha()
-        self.rect = self.surf.get_rect(center=self.center)
+        self.rect = self.surf.get_rect(centerx = self.x, centery = self.y)
 
     # Update location, kill if moved off of the screen
     def update(self):
-        self.rect.move_ip(self.speed * self.dir_x, -self.speed * self.dir_y)
+        self.x += self.speed * self.dir_x
+        self.y += -self.speed * self.dir_y
+        self.rect.centerx = int(self.x)
+        self.rect.centery = int(self.y)
         if self.rect.right < 0:
             self.kill()
         elif self.rect.left > self.screen_size:

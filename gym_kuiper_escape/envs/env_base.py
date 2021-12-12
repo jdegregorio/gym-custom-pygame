@@ -144,7 +144,7 @@ class KuiperEscape(gym.Env):
         observation = self.get_state()
         return observation
 
-    def render(self, mode='human'):
+    def render(self):
         """Renders the environment.
         The set of supported modes varies per environment. (And some
         environments do not support rendering at all.) By convention,
@@ -174,11 +174,11 @@ class KuiperEscape(gym.Env):
                 else:
                     super(MyEnv, self).render(mode=mode) # just raise an exception
         """
-        if mode == 'human':
+        if self.mode == 'human':
             self.game.turn_on_screen()
             self.game.render_screen()
 
-        if mode == 'rgb_array':
+        if self.mode == 'rgb_array':
             return self.get_rgb_array()
     
     def close(self):

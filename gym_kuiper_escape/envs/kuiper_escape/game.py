@@ -61,8 +61,10 @@ class Game:
         # Define constants for the screen width and height
         if self.mode == 'human':
             self.screen_mode = pygame.SHOWN
+            self.include_info = True
         else:
             self.screen_mode = pygame.HIDDEN
+            self.include_info = False
         self.screen_size = 512
         self.screen_dims = (self.screen_size, self.screen_size)
         self.framerate = framerate
@@ -115,6 +117,9 @@ class Game:
         if self.player.lives == 0:
             self.running = False
 
+        # Update screen surface
+        self.update_screen()
+
         # Increment frame and time
         self.frame += 1
         self.time = (self.frame / self.framerate)
@@ -152,17 +157,19 @@ class Game:
             self.screen_dims, 
             flags=pygame.SHOWN
         )
+        self.include_info=True
 
-    def render_screen(self):
+    def update_screen(self):
         self.screen.fill((0, 0, 0))
-        info_score = self.font.render("Score = " + str(math.floor(self.time)), 1, (255, 255, 255))
-        info_lives = self.font.render("Lives =  " + str(self.player.lives), 1, (255, 255, 255))
-        self.screen.blit(info_score, (5, 10))
-        self.screen.blit(info_lives, (self.screen_size - 100, 10))
+        if self.include_info:
+            info_score = self.font.render("Score = " + str(math.floor(self.time)), 1, (255, 255, 255))
+            info_lives = self.font.render("Lives =  " + str(self.player.lives), 1, (255, 255, 255))
+            self.screen.blit(info_score, (5, 10))
+            self.screen.blit(info_lives, (self.screen_size - 100, 10))
         for entity in self.all_sprites:
             self.screen.blit(entity.surf, entity.rect)
 
-        # Update the display
+    def render_screen(self):
         pygame.display.flip()
 
     def play(self):

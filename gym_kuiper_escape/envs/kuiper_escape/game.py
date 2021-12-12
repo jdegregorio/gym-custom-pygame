@@ -64,8 +64,6 @@ class Game:
         else:
             self.screen_mode = pygame.HIDDEN
         self.screen_size = 512
-        self.screen_width = self.screen_size
-        self.screen_height = self.screen_size
         self.screen_dims = (self.screen_size, self.screen_size)
         self.framerate = framerate
         self.clock = pygame.time.Clock()
@@ -120,9 +118,6 @@ class Game:
         # Increment frame and time
         self.frame += 1
         self.time = (self.frame / self.framerate)
-
-        if new_rock is not None:
-            print(f'frame: {self.frame}, rock_size: {new_rock.size}, rock_face: {new_rock.face}, rock_angle: {math.degrees(new_rock.angle)}, rock_xdir: {new_rock.dir_x}, rock_ydir: {new_rock.dir_y}, rock_speed: {new_rock.speed}')
 
     def get_action(self, pressed_keys):
         up = pressed_keys[K_UP]

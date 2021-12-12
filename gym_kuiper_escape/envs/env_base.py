@@ -2,6 +2,7 @@
 import sys
 import os
 import math
+import random
 
 # 3rd party imports
 import numpy as np
@@ -52,21 +53,19 @@ class KuiperEscape(gym.Env):
         self, 
         mode='agent',
         lives_start=1,
-        player_speed=0.5,
-        rock_rate_start=1,
-        rock_rate_increment=1e6,
+        player_speed=0.3,
+        rock_rate=1,
         rock_speed_min=0.1,
-        rock_speed_max=0.3,
-        rock_size_min=50,
-        rock_size_max=50,
+        rock_speed_max=0.1,
+        rock_size_min=30,
+        rock_size_max=30,
         framerate=10
     ):
         self.mode = mode
         self.output_size = 128
         self.lives_start = lives_start
         self.player_speed = player_speed
-        self.rock_rate_start = rock_rate_start
-        self.rock_rate_increment = rock_rate_increment
+        self.rock_rate = rock_rate
         self.rock_size_min = rock_size_min
         self.rock_size_max = rock_size_max
         self.rock_speed_min = rock_speed_min
@@ -76,8 +75,7 @@ class KuiperEscape(gym.Env):
             mode=self.mode,
             lives=self.lives_start, 
             player_speed=self.player_speed,
-            rock_rate_start=self.rock_rate_start,
-            rock_rate_increment=self.rock_rate_increment,
+            rock_rate=self.rock_rate,
             rock_speed_min=self.rock_speed_min,
             rock_speed_max=self.rock_speed_max,
             rock_size_min=self.rock_size_min,
@@ -133,7 +131,7 @@ class KuiperEscape(gym.Env):
         # Gather metadata/info
         info = {
             'iteration': self.iteration,
-            'score': self.game.score
+            'time': self.game.time
         }
 
         return (observation, reward, done, info)
@@ -152,8 +150,7 @@ class KuiperEscape(gym.Env):
         self.game = Game(
             mode=self.mode,
             lives=self.lives_start, 
-            rock_rate_start=self.rock_rate_start,
-            rock_rate_increment=self.rock_rate_increment,
+            rock_rate=self.rock_rate,
             rock_size_min=self.rock_size_min,
             rock_size_max=self.rock_size_max,
             rock_speed_min=self.rock_speed_min,
@@ -197,7 +194,6 @@ class KuiperEscape(gym.Env):
         if mode == 'human':
             self.game.turn_on_screen()
             self.game.render_screen()
-            self.game.clock.tick(self.game.framerate)
 
         if mode == 'rgb_array':
             surf = pygame.display.get_surface()
@@ -234,22 +230,6 @@ class KuiperEscape(gym.Env):
     def get_state(self):
         return self.get_rgb_state()
 
-    # def get_state(self):
-    #     self.grid = np.zeros((self.output_size, self.output_size))
-    #     for rock in self.game.rocks.sprites():
-    #         xr, yr = self.get_position(rock)
-    #         size = rock.size / rock.size_max
-    #         self.update_grid(xr, yr, size)
-    #     xp, yp = self.get_position(self.game.player)
-    #     self.update_grid(xp, yp, -1)
-    #     return self.grid
-
-    # def update_grid(self, x, y, value):
-    #     ratio = self.output_size / self.game.screen_height
-    #     x = int(x * ratio)
-    #     y = int(y * ratio)
-    #     self.grid[x, y] = value
-
     def get_rgb_state(self):
         surf = pygame.display.get_surface()
         array = pygame.surfarray.array3d(surf).astype(np.uint8)
@@ -267,5 +247,11 @@ class KuiperEscape(gym.Env):
 
 
 if __name__ == "__main__":
-    env = KuiperEscape(mode='human', framerate=60)
+
+    env = KuiperEscape(
+        mode='human',
+        rock_rate=2,
+        lives_start=1,
+        framerate=30
+    )
     env.game.play()

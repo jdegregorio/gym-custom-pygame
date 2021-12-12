@@ -32,12 +32,11 @@ from rock import Rock
 
 class Game:
     def __init__(
-        self, 
+        self,
         mode='human',
         lives=3,
         player_speed=0.5,  # portion of screen traversed in one second
-        rock_rate_start=2,  # Number of rocks/second generated
-        rock_rate_increment=50,  # Add additional rock/second every N seconds
+        rock_rate=2,  # Number of rocks/second generated
         rock_size_min=20,
         rock_size_max=100,
         rock_speed_min=0.1,  # portion of screen traversed in one second
@@ -46,29 +45,30 @@ class Game:
     ):
         # Initialize pygame
         pygame.init()
+        pygame.display.set_caption('Kuiper Escape')
         self.mode = mode
         self.font = pygame.font.SysFont("monospace", 12)
-        self.score = 0
+        self.frame = 1
+        self.time = 0
         self.lives = lives
         self.player_speed = player_speed
-        self.rock_rate_start = rock_rate_start
-        self.rock_rate_increment = rock_rate_increment
+        self.rock_rate = rock_rate
         self.rock_speed_min = rock_speed_min
         self.rock_speed_max = rock_speed_max
         self.rock_size_min = rock_size_min
         self.rock_size_max = rock_size_max
-        self.clock = pygame.time.Clock()
 
         # Define constants for the screen width and height
         if self.mode == 'human':
             self.screen_mode = pygame.SHOWN
         else:
             self.screen_mode = pygame.HIDDEN
-        self.screen_size = 512
+        self.screen_size = 1024
         self.screen_width = self.screen_size
         self.screen_height = self.screen_size
         self.screen_dims = (self.screen_size, self.screen_size)
         self.framerate = framerate
+        self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode(
             self.screen_dims, 
             flags=self.screen_mode
@@ -87,8 +87,10 @@ class Game:
     def step_frame(self, action):
 
         # Add rocks, increase rate over time
-        thres  = (1 / self.framerate) * (self.rock_rate_start + (self.score / self.rock_rate_increment))
-        if random.random() < thres:
+        frames_per_rock = int(self.framerate / self.rock_rate)
+        if frames_per_rock < 1:
+            frames_per_rock = 1
+        if self.frame % frames_per_rock == 0:
             new_rock = Rock(
                 screen_size=self.screen_size,
                 size_min=self.rock_size_min,
@@ -98,6 +100,8 @@ class Game:
             )
             self.rocks.add(new_rock)
             self.all_sprites.add(new_rock)
+        else:
+            new_rock = None
 
         # Update sprite positions
         self.player.update(action)
@@ -113,8 +117,12 @@ class Game:
         if self.player.lives == 0:
             self.running = False
 
-        # Update score
-        self.score += 1 / self.framerate
+        # Increment frame and time
+        self.frame += 1
+        self.time = (self.frame / self.framerate)
+
+        if new_rock is not None:
+            print(f'frame: {self.frame}, rock_face: {new_rock.face}, rock_center: {new_rock.center}, rock_angle: {math.degrees(new_rock.angle)}, rock_xdir: {new_rock.dir_x}, rock_ydir: {new_rock.dir_y}, rock_speed: {new_rock.speed}')
 
     def get_action(self, pressed_keys):
         up = pressed_keys[K_UP]
@@ -152,7 +160,7 @@ class Game:
 
     def render_screen(self):
         self.screen.fill((0, 0, 0))
-        info_score = self.font.render("Score = " + str(math.floor(self.score)), 1, (255, 255, 255))
+        info_score = self.font.render("Score = " + str(math.floor(self.time)), 1, (255, 255, 255))
         info_lives = self.font.render("Lives =  " + str(self.player.lives), 1, (255, 255, 255))
         self.screen.blit(info_score, (5, 10))
         self.screen.blit(info_lives, (self.screen_size - 100, 10))
@@ -187,4 +195,4 @@ class Game:
             self.render_screen()
 
             # Set framerate
-            self.clock.tick(self.framerate)
+            self.clock.tick_busy_loop(self.framerate)

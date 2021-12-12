@@ -24,25 +24,28 @@ class Rock(pygame.sprite.Sprite):
         self.speed_min = speed_min
         self.speed_max = speed_max
         self.speed = self.speed_min + random.random() * (self.speed_max - self.speed_min)
-        self.angle = random.random() * 2 * math.pi
-        self.dir_x = math.cos(self.angle)
-        self.dir_y = math.sin(self.angle)
-        if self.dir_x > 0 and self.dir_y <= 0:
-            self.face = random.choice(['left', 'top'])
-        elif self.dir_x > 0 and self.dir_y > 0:
-            self.face = random.choice(['left', 'bottom'])
-        elif self.dir_x <= 0 and self.dir_y <= 0:
-            self.face = random.choice(['right', 'top'])
-        elif self.dir_x <= 0 and self.dir_y > 0:
-            self.face = random.choice(['right', 'bottom'])
-        if self.face == 'left':
-            self.center = (-self.size / 2, random.randint(0, self.screen_size))
+        self.angle = random.random() * math.pi
+        self.face = random.choice(['bottom', 'left', 'top', 'right'])
+        if self.face == 'bottom':
+            self.angle = self.angle
+            self.dir_x = math.cos(self.angle)
+            self.dir_y = math.sin(self.angle)
+            self.center = (random.randint(0, self.screen_size), self.screen_size + (self.size / 2))
         elif self.face == 'right':
+            self.angle = self.angle + (1 * (math.pi / 4))
+            self.dir_x = math.cos(self.angle)
+            self.dir_y = math.sin(self.angle)
             self.center = (self.screen_size + (self.size / 2), random.randint(0, self.screen_size))
         elif self.face == 'top':
+            self.angle = self.angle + (2 * (math.pi / 4))
+            self.dir_x = math.cos(self.angle)
+            self.dir_y = math.sin(self.angle)
             self.center = (random.randint(0, self.screen_size), -self.size / 2)
-        elif self.face == 'bottom':
-            self.center = (random.randint(0, self.screen_size), self.screen_size + (self.size / 2))
+        elif self.face == 'left':
+            self.angle = self.angle + (3 * (math.pi / 4))
+            self.dir_x = math.cos(self.angle)
+            self.dir_y = math.sin(self.angle)
+            self.center = (-self.size / 2, random.randint(0, self.screen_size))
         self.surf = pygame.image.load(path_asset)
         self.surf = pygame.transform.scale(self.surf, (self.size, self.size))
         self.surf = self.surf.convert_alpha()

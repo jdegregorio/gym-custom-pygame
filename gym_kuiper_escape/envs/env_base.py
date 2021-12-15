@@ -15,6 +15,7 @@ import pygame
 path_game = os.path.dirname(os.path.realpath(__file__)) + '/kuiper_escape'
 sys.path.insert(0, path_game)
 from game import Game
+from lidar import Lidar
 
 
 class KuiperEscape(gym.Env):
@@ -60,7 +61,7 @@ class KuiperEscape(gym.Env):
         rock_size_min=0.05,
         rock_size_max=0.10,
         framerate=10,
-        output_size=32
+        output_size=64
     ):
         self.mode = mode
         self.output_size = output_size
@@ -73,12 +74,41 @@ class KuiperEscape(gym.Env):
         self.rock_speed_max = rock_speed_max
         self.framerate = framerate
         self.game = self.init_game()
+        self.lidar_n_beams = 32
+        self.lidar_step_pct = 0.02
+        self.lidar_max_radius_pct = 0.5
+        self.lidar = self.init_lidar()
         self.iteration = 0
         self.iteration_max = 15 * 60 * self.game.framerate  # 15 minutes
         self.init_obs = self.get_state()
         self.action_space = Discrete(5)
-        self.observation_space = Box(low=0, high=255, shape=(self.output_size, self.output_size, 3), dtype=np.float16)
+        self.observation_space = Box(low=0, high=1, shape=(self.lidar_n_beams * 2, 1), dtype=np.float16)
         self.reward_range = (0, 1)
+
+    def init_game(self):
+        game = Game(
+            mode=self.mode,
+            lives=self.lives_start, 
+            player_speed=self.player_speed,
+            rock_rate=self.rock_rate,
+            rock_speed_min=self.rock_speed_min,
+            rock_speed_max=self.rock_speed_max,
+            rock_size_min=self.rock_size_min,
+            rock_size_max=self.rock_size_max,
+            framerate=self.framerate
+        )
+        return game
+
+    def init_lidar(self):
+        lidar = Lidar(
+            x = self.game.player.x,
+            y = self.game.player.y,
+            n_beams = self.lidar_n_beams,
+            step = self.lidar_step_pct * self.game.screen_size,
+            max_radius = self.lidar_max_radius_pct * self.game.screen_size,
+            screen_size=self.game.screen_size
+        )
+        return lidar
 
     def step(self, action):
         """Run one timestep of the environment's dynamics. When end of
@@ -107,7 +137,7 @@ class KuiperEscape(gym.Env):
         xp = xp / self.game.screen_size
         yp = yp / self.game.screen_size
         dist_from_center = math.sqrt((xp-0.5)**2 + (yp-0.5)**2)
-        if dist_from_center < 0.5:
+        if dist_from_center < 0.35:
             reward = 1
         else:
             reward = 0
@@ -140,11 +170,12 @@ class KuiperEscape(gym.Env):
             observation (object): the initial observation.
         """
         self.game = self.init_game()
+        self.lidar = self.init_lidar()
         self.iteration = 0
         observation = self.get_state()
         return observation
 
-    def render(self):
+    def render(self, mode):
         """Renders the environment.
         The set of supported modes varies per environment. (And some
         environments do not support rendering at all.) By convention,
@@ -174,11 +205,16 @@ class KuiperEscape(gym.Env):
                 else:
                     super(MyEnv, self).render(mode=mode) # just raise an exception
         """
-        if self.mode == 'human':
+        if mode == 'human':
             self.game.turn_on_screen()
+            self.game.update_screen()
+            ls_beams = self.lidar.get_beams()
+            for beam in ls_beams:
+                self.game.screen.blit(beam.surf, beam.rect)
             self.game.render_screen()
+            self.game.clock.tick(self.game.framerate)
 
-        if self.mode == 'rgb_array':
+        if mode == 'rgb_array':
             return self.get_rgb_array()
     
     def close(self):
@@ -205,8 +241,23 @@ class KuiperEscape(gym.Env):
         return [seed]
 
     def get_state(self):
+        self.lidar.sync_position(self.game.player)
+        ls_radius, ls_collide = self.lidar.scan(
+            collide_sprites=self.game.rocks
+        )
+        array_radius = np.array(ls_radius)
+        array_radius = array_radius / (self.lidar_max_radius_pct * self.game.screen_size)
+        array_collide = np.array(ls_collide)
+        array_state = np.concatenate([array_radius, array_collide])
+        array_state = array_state.reshape((len(array_state), 1))
+        return array_state
+        
+    def get_rgb_state(self):
         rgb_array = self.get_rgb_array()
         rgb_array = self.down_sample_rgb_array(rgb_array, self.output_size)
+        rgb_array = rgb_array[:, :, 0]
+        rgb_array = np.reshape(rgb_array, (self.output_size, self.output_size, 1))
+        rgb_array = rgb_array.astype(np.uint8)
         return rgb_array
 
     def get_rgb_array(self):
@@ -222,20 +273,6 @@ class KuiperEscape(gym.Env):
         bin_size = int(self.game.screen_size / output_size)
         array_ds = array.reshape((output_size, bin_size, output_size, bin_size, 3)).max(3).max(1)
         return array_ds
-
-    def init_game(self):
-        game = Game(
-            mode=self.mode,
-            lives=self.lives_start, 
-            player_speed=self.player_speed,
-            rock_rate=self.rock_rate,
-            rock_speed_min=self.rock_speed_min,
-            rock_speed_max=self.rock_speed_max,
-            rock_size_min=self.rock_size_min,
-            rock_size_max=self.rock_size_max,
-            framerate=self.framerate
-        )
-        return game
 
 
 if __name__ == "__main__":

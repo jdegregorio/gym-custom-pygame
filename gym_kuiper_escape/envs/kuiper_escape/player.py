@@ -40,11 +40,9 @@ class Player(pygame.sprite.Sprite):
         if action == 1:
             self.y += -self.speed
             self.rect.centery = int(self.y)
-            #self.rect.move_ip(0, -self.speed)
         if action == 2:
             self.x += self.speed
             self.rect.centerx = int(self.x)
-            #self.rect.move_ip(self.speed, 0)
         if action == 3:
             self.y += self.speed
             self.rect.centery = int(self.y)
@@ -75,12 +73,16 @@ class Player(pygame.sprite.Sprite):
         # Keep player on the screen
         if self.rect.left < 0:
             self.rect.left = 0
+            self.x = self.rect.centerx
         if self.rect.right > self.screen_size:
             self.rect.right = self.screen_size
+            self.x = self.rect.centerx
         if self.rect.top <= 0:
             self.rect.top = 0
+            self.y = self.rect.centery
         if self.rect.bottom >= self.screen_size:
             self.rect.bottom = self.screen_size
+            self.y = self.rect.centery
 
     def die(self):
         self.lives -= 1

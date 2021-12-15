@@ -37,10 +37,15 @@ class KuiperEscape(gym.Env):
      - 7: Down/Left Diagnal (optional)
      - 8: Left/Up Diagnal (optional)
 
-     Note: For actions 0-4 (none/up/right/down/left) are recommended for 
+     Note: For actions 0-4 (none/up/right/down/left) are recommended for
      simplified action space.
 
-    The state/observation consists of the following variables: TODO
+    The state/observation is a "virtual" lidar system. It sends off virtual
+    beams of light in all directions to gather an array of points describing
+    the distance and characteristics of nearby objects. The observation data
+    consists of "n" designated lidar beams (sent of in uniformally distributed
+    angles), as well as n collision type flags (0 for no collision, or 1 for
+    rock collision).
 
     The environment will provide the following rewards:
      - Reward of 1 for each frame without dying.
@@ -175,7 +180,7 @@ class KuiperEscape(gym.Env):
         observation = self.get_state()
         return observation
 
-    def render(self, mode):
+    def render(self, mode, render_lidar=False):
         """Renders the environment.
         The set of supported modes varies per environment. (And some
         environments do not support rendering at all.) By convention,
@@ -209,8 +214,9 @@ class KuiperEscape(gym.Env):
             self.game.turn_on_screen()
             self.game.update_screen()
             ls_beams = self.lidar.get_beams()
-            for beam in ls_beams:
-                self.game.screen.blit(beam.surf, beam.rect)
+            if render_lidar:
+                for beam in ls_beams:
+                    self.game.screen.blit(beam.surf, beam.rect)
             self.game.render_screen()
             self.game.clock.tick(self.game.framerate)
 

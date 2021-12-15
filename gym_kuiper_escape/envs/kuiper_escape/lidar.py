@@ -7,6 +7,19 @@ import numpy as np
 
 
 class Beam(pygame.sprite.Sprite):
+    """Beam Class 
+
+    The beam class is a sub-component of the final virtual lidar sensing
+    system. It consists of a single point of "light" that propogates out in an
+    assigned direction from the origin.
+
+    The beam object is represented as a pygame sprite, so that it can
+    optinoally be inserted and visualized within the game environment.
+
+    The most important method is "step_out", which iteratively moves the beam
+    of light outward until it hits several stop criteria (i.e. off screen, hits
+    rock, or max distance)
+    """
     def __init__(self, x, y, angle, step, max_radius, screen_size):
         super(Beam, self).__init__()
         self.x_init = x
@@ -78,6 +91,10 @@ class Beam(pygame.sprite.Sprite):
 
 
 class Lidar:
+    """Lidar Array Class This class is a set of lidar beams sent off in all
+    directions. The resulting state representation is a set of "lidar points"
+    giving a sense for what is surrounding the lidar array.
+    """
     def __init__(self, x, y, n_beams, step, max_radius, screen_size):
         self.x = x
         self.y = y

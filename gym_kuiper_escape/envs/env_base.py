@@ -2,6 +2,7 @@
 import sys
 import os
 import math
+import random
 
 # 3rd party imports
 import numpy as np
@@ -14,6 +15,7 @@ import pygame
 path_game = os.path.dirname(os.path.realpath(__file__)) + '/kuiper_escape'
 sys.path.insert(0, path_game)
 from game import Game
+from lidar import Lidar
 
 
 class KuiperEscape(gym.Env):
@@ -27,43 +29,91 @@ class KuiperEscape(gym.Env):
     The user has the following discrete actions:
      - 0: Don't move
      - 1: Up
-     - 2: Up/Right Diagnal
-     - 3: Right
-     - 4: Right/Down Diagnal
-     - 5: Down
-     - 6: Down/Left Diagnal
-     - 7: Left
-     - 8: Left/Up Diagnal
+     - 2: Right
+     - 3: Down
+     - 4: Left
+     - 5: Up/Right Diagnal (optional)
+     - 6: Right/Down Diagnal (optional)
+     - 7: Down/Left Diagnal (optional)
+     - 8: Left/Up Diagnal (optional)
 
-    The state/observation consists of the following variables:
-     - Player Location: x, y
-     - For N-nearest Asteroids:
-        - Absolute position (x, y)
-        - Straight line distance from player
-        - Angle from player to asteroid
-        - Size
-        - Speed
-        - Heading (i.e. is it headed at or away from player)
+     Note: For actions 0-4 (none/up/right/down/left) are recommended for
+     simplified action space.
 
-    Note: All state observations are normalized between 0 and 1
+    The state/observation is a "virtual" lidar system. It sends off virtual
+    beams of light in all directions to gather an array of points describing
+    the distance and characteristics of nearby objects. The observation data
+    consists of "n" designated lidar beams (sent of in uniformally distributed
+    angles), as well as n collision type flags (0 for no collision, or 1 for
+    rock collision).
 
     The environment will provide the following rewards:
-     - Reward of 1 for each step without losing life
-     - Penalty (sized based on framerate) for each life lost
+     - Reward of 1 for each frame without dying.
+     - Reward not awareded if player is in corners
 
     """
 
     metadata = {'render.modes': ['human', 'rgb_array']}
 
-    def __init__(self, mode='agent', lives=10):
+    def __init__(
+        self, 
+        mode='agent',
+        lives_start=1,
+        player_speed=0.5,
+        rock_rate=1,
+        rock_speed_min=0.05,
+        rock_speed_max=0.10,
+        rock_size_min=0.05,
+        rock_size_max=0.10,
+        framerate=10,
+        output_size=64
+    ):
         self.mode = mode
-        self.game = Game(mode=mode, lives=lives)
+        self.output_size = output_size
+        self.lives_start = lives_start
+        self.player_speed = player_speed
+        self.rock_rate = rock_rate
+        self.rock_size_min = rock_size_min
+        self.rock_size_max = rock_size_max
+        self.rock_speed_min = rock_speed_min
+        self.rock_speed_max = rock_speed_max
+        self.framerate = framerate
+        self.game = self.init_game()
+        self.lidar_n_beams = 32
+        self.lidar_step_pct = 0.02
+        self.lidar_max_radius_pct = 0.5
+        self.lidar = self.init_lidar()
         self.iteration = 0
         self.iteration_max = 15 * 60 * self.game.framerate  # 15 minutes
-        self.n_rock_state_obs = 10
-        self.action_space = Discrete(9)
-        self.observation_space = Box(low=0, high=1, shape=(1, (self.n_rock_state_obs + 2)), dtype=np.float16)
-        self.reward_range = (-5 * self.game.framerate, 1)
+        self.init_obs = self.get_state()
+        self.action_space = Discrete(5)
+        self.observation_space = Box(low=0, high=1, shape=(self.lidar_n_beams * 2, 1), dtype=np.float16)
+        self.reward_range = (0, 1)
+
+    def init_game(self):
+        game = Game(
+            mode=self.mode,
+            lives=self.lives_start, 
+            player_speed=self.player_speed,
+            rock_rate=self.rock_rate,
+            rock_speed_min=self.rock_speed_min,
+            rock_speed_max=self.rock_speed_max,
+            rock_size_min=self.rock_size_min,
+            rock_size_max=self.rock_size_max,
+            framerate=self.framerate
+        )
+        return game
+
+    def init_lidar(self):
+        lidar = Lidar(
+            x = self.game.player.x,
+            y = self.game.player.y,
+            n_beams = self.lidar_n_beams,
+            step = self.lidar_step_pct * self.game.screen_size,
+            max_radius = self.lidar_max_radius_pct * self.game.screen_size,
+            screen_size=self.game.screen_size
+        )
+        return lidar
 
     def step(self, action):
         """Run one timestep of the environment's dynamics. When end of
@@ -80,21 +130,25 @@ class KuiperEscape(gym.Env):
         """
 
         # Step frame
-        lives_before = self.game.player.lives
         self.game.step_frame(action)
-        lives_after = self.game.player.lives
         self.iteration += 1
 
         # Gather observation
         observation = self.get_state()
 
         # Gather reward
-        reward = 1
-        if lives_after < lives_before:
-            reward = -5 * self.game.framerate
+        xp = self.game.player.x
+        yp = self.game.player.y
+        xp = xp / self.game.screen_size
+        yp = yp / self.game.screen_size
+        dist_from_center = math.sqrt((xp-0.5)**2 + (yp-0.5)**2)
+        if dist_from_center < 0.35:
+            reward = 1
+        else:
+            reward = 0
 
         # Check stop conditions
-        if lives_after == 0:
+        if self.game.player.lives == 0:
             done = True
         elif self.iteration > self.iteration_max:
             done = True
@@ -104,9 +158,7 @@ class KuiperEscape(gym.Env):
         # Gather metadata/info
         info = {
             'iteration': self.iteration,
-            'score': self.game.score, 
-            'lives_before': lives_before,
-            'lives_after': lives_after
+            'time': self.game.time
         }
 
         return (observation, reward, done, info)
@@ -122,12 +174,13 @@ class KuiperEscape(gym.Env):
         Returns:
             observation (object): the initial observation.
         """
-        self.game = Game(mode='agent')
+        self.game = self.init_game()
+        self.lidar = self.init_lidar()
         self.iteration = 0
         observation = self.get_state()
         return observation
 
-    def render(self, mode='human'):
+    def render(self, mode, render_lidar=False):
         """Renders the environment.
         The set of supported modes varies per environment. (And some
         environments do not support rendering at all.) By convention,
@@ -159,17 +212,16 @@ class KuiperEscape(gym.Env):
         """
         if mode == 'human':
             self.game.turn_on_screen()
+            self.game.update_screen()
+            ls_beams = self.lidar.get_beams()
+            if render_lidar:
+                for beam in ls_beams:
+                    self.game.screen.blit(beam.surf, beam.rect)
             self.game.render_screen()
             self.game.clock.tick(self.game.framerate)
 
         if mode == 'rgb_array':
-            surf = pygame.display.get_surface()
-            rgb_array = pygame.surfarray.array3d(surf)
-            rgb_array = rgb_array.astype(np.uint8)
-            rgb_array = np.rot90(rgb_array)
-            rgb_array = np.flip(rgb_array)
-            rgb_array = np.fliplr(rgb_array)
-            return rgb_array
+            return self.get_rgb_array()
     
     def close(self):
         """Override close in your subclass to perform any necessary cleanup.
@@ -195,85 +247,50 @@ class KuiperEscape(gym.Env):
         return [seed]
 
     def get_state(self):
-        state_player = self.get_player_state()
-        state_rocks = self.get_rock_state()
-        state_rocks = state_rocks.flatten()
-        state = np.concatenate([state_player, state_rocks])
-        state = state.astype(np.float16)
-        return state
+        self.lidar.sync_position(self.game.player)
+        ls_radius, ls_collide = self.lidar.scan(
+            collide_sprites=self.game.rocks
+        )
+        array_radius = np.array(ls_radius)
+        array_radius = array_radius / (self.lidar_max_radius_pct * self.game.screen_size)
+        array_collide = np.array(ls_collide)
+        array_state = np.concatenate([array_radius, array_collide])
+        array_state = array_state.reshape((len(array_state), 1))
+        return array_state
+        
+    def get_rgb_state(self):
+        rgb_array = self.get_rgb_array()
+        rgb_array = self.down_sample_rgb_array(rgb_array, self.output_size)
+        rgb_array = rgb_array[:, :, 0]
+        rgb_array = np.reshape(rgb_array, (self.output_size, self.output_size, 1))
+        rgb_array = rgb_array.astype(np.uint8)
+        return rgb_array
 
-    def get_player_state(self):
-        x, y = self.get_position(self.game.player)
-        array_state_player = np.array([x, y])
-        array_state_player = array_state_player.astype(np.float16)
-        return array_state_player
+    def get_rgb_array(self):
+        surf = pygame.display.get_surface()
+        array = pygame.surfarray.array3d(surf).astype(np.float16)
+        array = np.rot90(array)
+        array = np.flip(array)
+        array = np.fliplr(array)
+        array = array.astype(np.uint8)
+        return array
 
-    def get_rock_state(self):
-
-        # Get rock states and sort by proximity
-        ls_rock_states = []
-        for rock in self.game.rocks.sprites():
-            x, y = self.get_position(rock)
-            x = x / self.game.screen_width
-            y = y / self.game.screen_height
-            dist_max = math.sqrt(self.game.screen_height**2 + self.game.screen_width**2)
-            dist = self.get_rock_distance(rock) / dist_max
-            rock_angle = self.get_rock_angle(rock) / 360
-            size = rock.size / rock.size_max
-            speed = rock.speed / rock.speed_max
-            heading = (self.get_rock_heading(rock) / 360) + 0.5
-            ls_rock_states.append([dist, x, y, rock_angle, size, speed, heading])
-        ls_rock_states.sort()
-
-        # Construct rock observation array
-        n_rock_obs = 10
-        array_state_rocks = np.zeros((self.n_rock_state_obs, 7))
-        for i in range(n_rock_obs):
-            try:
-                array_state_rocks[i, :] = ls_rock_states[i]
-            except:
-                pass
-        array_state_rocks = array_state_rocks.astype(np.float16)
-        return array_state_rocks
-
-    def get_position(self, sprite):
-        center = sprite.rect.center
-        x = round(center[0])
-        y = self.game.screen_height - round(center[1])  # flip pygame coordnates
-        return (x, y)
-
-    def get_distance(self, sprite_1, sprite_2):
-        x1, y1 = self.get_position(sprite_1)
-        x2, y2 = self.get_position(sprite_2)
-        return int(math.sqrt((x2 - x1)**2 + (y2 - y1)**2))
-
-    def get_rock_distance(self, rock):
-        return int(self.get_distance(self.game.player, rock))
-
-    def get_angle(self, sprite_1, sprite_2):
-        x1, y1 = self.get_position(sprite_1)
-        x2, y2 = self.get_position(sprite_2)
-        x_rel = x2 - x1
-        y_rel = y2 - y1
-        y_rel = y_rel
-        angle = math.atan2(y_rel, x_rel)
-        angle = math.degrees(angle) % 360
-        return int(angle)
-
-    def get_rock_angle(self, rock):
-        return int(self.get_angle(self.game.player, rock))
-
-    def get_rock_heading(self, rock):
-        angle_speed = math.degrees(rock.angle)
-        angle_player = self.get_angle(rock, self.game.player)
-        angle_rel = angle_player - angle_speed
-        if angle_rel > 180:
-            angle_rel = angle_rel % 180 - 180
-        if angle_rel < -180:
-            angle_rel = angle_rel % 180
-        return int(angle_rel)
+    def down_sample_rgb_array(self, array, output_size):
+        bin_size = int(self.game.screen_size / output_size)
+        array_ds = array.reshape((output_size, bin_size, output_size, bin_size, 3)).max(3).max(1)
+        return array_ds
 
 
 if __name__ == "__main__":
-    env = KuiperEscape(mode='human')
+
+    env = KuiperEscape(
+        mode='human',
+        player_speed=0.5,
+        rock_rate=1,
+        rock_speed_min=0.05,
+        rock_speed_max=0.10,
+        rock_size_min=0.05,
+        rock_size_max=0.10,
+        framerate=10
+    )
     env.game.play()

@@ -16,34 +16,33 @@ The objective of the game is to live as long as you can, while avoiding the aste
 The user has the following discrete actions:
  * 0: Don't move
  * 1: Up
- * 2: Up/Right Diagnal
- * 3: Right
- * 4: Right/Down Diagnal
- * 5: Down
- * 6: Down/Left Diagnal
- * 7: Left
- * 8: Left/Up Diagnal
+ * 2: Right
+ * 3: Down
+ * 4: Left
+ * 5: Up/Right Diagnal (optional)
+ * 6: Right/Down Diagnal (optional)
+ * 7: Down/Left Diagnal (optional)
+ * 8: Left/Up Diagnal (optional)
+
+Note: The diagonal directions are optional in order to conveniently enable smaller action spaces (e.g. `Discrete(5)` vs. `Discrete(9)`)
 
 ### State/Observations
 
-The state/observation consists of the following variables:
- * Player Location: x, y
- * For N*nearest Asteroids:
- * Absolute position (x, y)
- * Straight line distance from player
- * Angle from player to asteroid
- * Size
- * Speed
- * Heading (i.e. is it headed at or away from player)
+The state/observation is a "virtual" lidar system. It sends off virtual
+beams of light in all directions to gather an array of points describing
+the distance and characteristics of nearby objects. The size of the lidar array and resulting observation/state space is configurable when the environment is initialized
 
-Note: All state observations are normalized between 0 and 1
+The observation data (for each beam in the lidar array):
+ * Distance (i.e. radial distance from player to terminating point of lidar beam)
+ * Collision detection
+   * 0 if terminated at edge of screen, or at max radius distance
+   * 1 if collided with a rock
 
 ### Rewards
 
 The environment will provide the following rewards:
  * Reward of 1 for each step without losing life
- * Penalty (sized based on framerate) for each life lost
-
+ * No reward is given if the player is in the corners of the screen
 
 ## Setup
 
@@ -97,10 +96,12 @@ import gym_kuiper_escape
 env = gym.make('kuiper-escape-base-v0', mode='human'))
 env.game.play()
 ```
-`TODO: Make manual play more user friendly`
 
 ## Reinforcement Learning
-`TODO: Link to repo with RL experiments`
+
+See this gym in action by checking out the GitHub repository using this gym to train an agent using reinforcement learning.
+
+[Kuiper Escape Reinforcement Learning Repo](https://github.com/jdegregorio/rl-kuiper-escape)
 
 
 ## Background & Resources

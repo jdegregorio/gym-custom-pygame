@@ -38,6 +38,13 @@ The observation data (for each beam in the lidar array):
    * 0 if terminated at edge of screen, or at max radius distance
    * 1 if collided with a rock
 
+**Example Visualizations of State**
+
+<img width="264" alt="image" src="https://user-images.githubusercontent.com/20359930/146223524-e07f7dd8-7e5e-40e2-a374-fdb20f987153.png">
+<img width="261" alt="image" src="https://user-images.githubusercontent.com/20359930/146223615-de23593f-02df-4ef1-b356-87153208d6f1.png">
+
+Note: The yellow dots (1 collide state) represent contact with a rock, the green dots (0 collide state) represent contact with wall or open space.
+
 ### Rewards
 
 The environment will provide the following rewards:

@@ -60,12 +60,15 @@ class KuiperEscape(gym.Env):
         mode='agent',
         lives_start=1,
         player_speed=0.5,
-        rock_rate=1,
-        rock_speed_min=0.05,
-        rock_speed_max=0.10,
+        rock_rate=2,
+        rock_speed_min=0.03,
+        rock_speed_max=0.20,
         rock_size_min=0.05,
-        rock_size_max=0.10,
-        framerate=10,
+        rock_size_max=0.2,
+        penalty_offcenter_val=0,
+        penalty_offcenter_thres = 0.35,
+        penalty_movement=0,
+        framerate=30,
         output_size=64
     ):
         self.mode = mode
@@ -77,16 +80,19 @@ class KuiperEscape(gym.Env):
         self.rock_size_max = rock_size_max
         self.rock_speed_min = rock_speed_min
         self.rock_speed_max = rock_speed_max
+        self.penalty_offcenter_val = penalty_offcenter_val
+        self.penalty_offcenter_thres = penalty_offcenter_thres
+        self.penalty_movement = penalty_movement
         self.framerate = framerate
         self.game = self.init_game()
-        self.lidar_n_beams = 32
-        self.lidar_step_pct = 0.02
-        self.lidar_max_radius_pct = 0.5
+        self.lidar_n_beams = 64
+        self.lidar_step_pct = 0.01
+        self.lidar_max_radius_pct = 0.75
         self.lidar = self.init_lidar()
         self.iteration = 0
         self.iteration_max = 15 * 60 * self.game.framerate  # 15 minutes
         self.init_obs = self.get_state()
-        self.action_space = Discrete(5)
+        self.action_space = Discrete(9)
         self.observation_space = Box(low=0, high=1, shape=(self.lidar_n_beams * 2, 1), dtype=np.float16)
         self.reward_range = (0, 1)
 
@@ -137,15 +143,7 @@ class KuiperEscape(gym.Env):
         observation = self.get_state()
 
         # Gather reward
-        xp = self.game.player.x
-        yp = self.game.player.y
-        xp = xp / self.game.screen_size
-        yp = yp / self.game.screen_size
-        dist_from_center = math.sqrt((xp-0.5)**2 + (yp-0.5)**2)
-        if dist_from_center < 0.35:
-            reward = 1
-        else:
-            reward = 0
+        reward = self.get_reward(action)
 
         # Check stop conditions
         if self.game.player.lives == 0:
@@ -245,6 +243,31 @@ class KuiperEscape(gym.Env):
         """
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
+
+    def get_reward(self, action):
+
+        # Initialize with reward of 1 and penalty of 0
+        reward = 1
+        penalty = 0
+
+        # Calculate penalty for distance from center
+        xp = self.game.player.x
+        yp = self.game.player.y
+        xp = xp / self.game.screen_size
+        yp = yp / self.game.screen_size
+        dist_from_center = math.sqrt((xp-0.5)**2 + (yp-0.5)**2)
+        if dist_from_center > self.penalty_offcenter_thres:
+            penalty += self.penalty_offcenter_val
+
+        # Calculate penalty for excessive movement
+        if action != 0:
+            penalty += self.penalty_movement
+
+        # Adjust reward for penalties
+        reward -= penalty
+        reward = max([reward, 0])
+
+        return reward
 
     def get_state(self):
         self.lidar.sync_position(self.game.player)
